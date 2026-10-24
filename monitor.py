@@ -34,7 +34,7 @@ MAX_NOTIFICHE = 10
 
 # Campi "identificativo" da cercare, in ordine. Se nessuno esiste si usa un hash.
 ID_FIELDS = {
-    "voti": ("prg_voto", "prg", "id"),
+    "voti": (),
     "bacheca": ("prg_messaggio", "prg_bacheca", "prg", "id"),
 }
 # Campi che cambiano nel tempo senza che l'elemento sia "nuovo" (es. presa visione)
