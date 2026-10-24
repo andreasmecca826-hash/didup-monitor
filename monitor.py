@@ -1,66 +1,122 @@
 import os
 import json
 import requests
-from argofamiglia import ArgoFamiglia
+from datetime import datetime
+from argofamiglia import Famiglia
 
-# Leggi le credenziali dai Secrets di GitHub
-CODICE_SCUOLA = os.environ.get("CODICE_SCUOLA")
-USERNAME = os.environ.get("USERNAME")
-PASSWORD = os.environ.get("PASSWORD")
-NTFY_TOPIC = os.environ.get("NTFY_TOPIC")
+# Leggi le credenziali dai segreti di GitHub
+USERNAME = os.getenv("DIDUP_USERNAME")
+PASSWORD = os.getenv("DIDUP_PASSWORD")
+NTFY_TOPIC = os.getenv("NTFY_TOPIC", "Morselli_alerts_didup")
 
-STATE_FILE = "last_state.json"
+STATE_FILE = "state.json"
 
-def invia_notifica(testo):
+def send_ntfy(title, message):
+    url = f"https://ntfy.sh/{NTFY_TOPIC}"
     try:
-        requests.post(f"https://ntfy.sh/{NTFY_TOPIC}", data=testo.encode('utf-8'))
+        requests.post(url, data=message.encode('utf-8'), headers={
+            "Title": title.encode('utf-8'),
+            "Priority": "default",
+            "Tags": "school"
+        })
     except Exception as e:
-        print(f"Errore invio notifica: {e}")
+        print(f"Errore nell'invio della notifica ntfy: {e}")
 
-def carica_ultimo_stato():
+def load_state():
     if os.path.exists(STATE_FILE):
         try:
             with open(STATE_FILE, "r") as f:
                 return json.load(f)
         except:
-            return {}
-    return {}
+            pass
+    return {"grades": [], "bacheca": []}
 
-def salva_nuovo_stato(stato):
+def save_state(state):
     with open(STATE_FILE, "w") as f:
-        json.dump(stato, f)
+        json.dump(state, f)
 
 def main():
-    if not all([CODICE_SCUOLA, USERNAME, PASSWORD, NTFY_TOPIC]):
-        print("Errore: Mancano le variabili d'ambiente.")
+    if not USERNAME or not PASSWORD:
+        print("Errore: Credenziali DidUP non configurate nei secrets.")
         return
 
+    print("Connessione a DidUP in corso...")
+    client = Famiglia()
+    
     try:
-        # Connessione a DidUP
-        session = ArgoFamiglia(CODICE_SCUOLA, USERNAME, PASSWORD)
-        
-        # Recupera gli ultimi voti
-        voti = session.getVoti()
-        
-        ultimo_stato = carica_ultimo_stato()
-        ultimo_id_voto = ultimo_stato.get("ultimo_voto_id", None)
-        
-        if voti:
-            ultimo_voto = voti[0] 
-            corrente_id = str(ultimo_voto.get("id", ultimo_voto.get("data", "")))
-            
-            if corrente_id != ultimo_id_voto:
-                materia = ultimo_voto.get("materia", "Materia")
-                valore = ultimo_voto.get("valore", "Nuovo voto")
-                
-                invia_notifica(f"🔔 Nuovo voto su DidUP!\n{materia}: {valore}")
-                salva_nuovo_stato({"ultimo_voto_id": corrente_id})
-                print("Nuovo voto rilevato e notifica inviata.")
-            else:
-                print("Nessun nuovo voto.")
-                
+        client.login(USERNAME, PASSWORD)
     except Exception as e:
-        print(f"Errore durante il controllo di DidUP: {e}")
+        print(f"Errore durante il login a DidUP: {e}")
+        send_ntfy("Errore DidUP", "Impossibile effettuare il login: credenziali errate o servizio offline.")
+        return
+
+    state = load_state()
+    
+    # --- 1. CONTROLLO VOTI ---
+    try:
+        grades = client.voti() or []
+        known_grades = set(tuple(g.items()) for g in state.get("grades", []))
+        
+        new_grades = []
+        current_grades_list = []
+        
+        for g in grades:
+            # Creiamo un identificativo unico per il voto basato su materia, valore e data
+            g_item = {
+                "materia": str(g.get("materia", "")),
+                "valore": str(g.get("valore", "")),
+                "data": str(g.get("data", "")),
+                "tipo": str(g.get("tipo", ""))
+            }
+            current_grades_list.append(g_item)
+            
+            g_tuple = tuple(g_item.items())
+            if g_tuple not in known_grades:
+                new_grades.append(g_item)
+
+        if new_grades and state.get("grades"): # Evita di notificare tutti i voti storici al primo avvio
+            for g in new_grades:
+                msg = f"Materia: {g['materia']}\nVoto: {g['valore']}\nData: {g['data']}\nTipo: {g['tipo']}"
+                send_ntfy("Nuovo Voto Registrato! 📚", msg)
+                print(f"Nuovo voto trovato: {g}")
+        
+        state["grades"] = current_grades_list
+    except Exception as e:
+        print(f"Errore nel recupero dei voti: {e}")
+
+    # --- 2. CONTROLLO BACHECA / CIRCOLARI ---
+    try:
+        bacheca_items = client.bacheca() or []
+        known_bacheca = set(str(item.get("ID", item.get("id", i))) for i, item in enumerate(state.get("bacheca", [])))
+        
+        new_bacheca = []
+        current_bacheca_list = []
+        
+        for item in bacheca_items:
+            item_id = str(item.get("ID", item.get("id", item.get("titolo", ""))))
+            item_data = {
+                "ID": item_id,
+                "titolo": str(item.get("titolo", "Nuova Circolare")),
+                "data": str(item.get("data", ""))
+            }
+            current_bacheca_list.append(item_data)
+            
+            if item_id not in known_bacheca:
+                new_bacheca.append(item_data)
+
+        if new_bacheca and state.get("bacheca"): # Evita di notificare lo storico al primo avvio
+            for item in new_bacheca:
+                msg = f"Titolo: {item['titolo']}\nData: {item['data']}"
+                send_ntfy("Nuova Circolare in Bacheca! 📢", msg)
+                print(f"Nuova bacheca trovata: {item}")
+                
+        state["bacheca"] = current_bacheca_list
+    except Exception as e:
+        print(f"Errore nel recupero della bacheca: {e}")
+
+    save_state(state)
+    print("Controllo completato con successo.")
 
 if __name__ == "__main__":
     main()
+
