@@ -1,7 +1,7 @@
 import os
 import json
 import requests
-from argofamiglia import Famiglia
+from argofamiglia.argofamiglia import ArgoFamiglia
 
 # Leggi le credenziali dai segreti di GitHub
 USERNAME = os.getenv("DIDUP_USERNAME")
@@ -40,7 +40,7 @@ def main():
         return
 
     print("Connessione a DidUP in corso...")
-    client = Famiglia()
+    client = ArgoFamiglia()
     
     try:
         client.login(USERNAME, PASSWORD)
@@ -83,5 +83,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
- 
