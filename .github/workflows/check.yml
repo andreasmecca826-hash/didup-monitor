@@ -30,28 +30,19 @@ jobs:
         run: pip install "didupwrapper>=0.1.1,<0.2" requests
 
       - name: Prova a scaricare stato precedente
-        id: download_state
         uses: actions/download-artifact@v4
         with:
           name: didup-state
           path: .
         continue-on-error: true
 
-            - name: Inizializza state.json se mancante
+      - name: Inizializza state.json se mancante
         run: |
           if [ ! -f state.json ]; then
             echo '{}' > state.json
-            echo "✅ Creato state.json vuoto"
-          else
-            echo "✅ Stato precedente recuperato"
           fi
-    
 
-      - name: Mostra stato corrente
-        run: cat state.json
-
-      - name: Esegui monitor DidUP
-        id: run_monitor
+      - name: Esegui monitor
         env:
           DIDUP_SCHOOL: ${{ secrets.CODICE_SCUOLA }}
           DIDUP_USER: ${{ secrets.USERNAME }}
@@ -59,17 +50,7 @@ jobs:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC || 'Morselli_alerts_didup' }}
         run: python monitor.py
 
-      - name: Verifica che state.json sia stato aggiornato
-        run: |
-          if [ ! -f state.json ]; then
-            echo "❌ ERRORE: state.json non esiste dopo l'esecuzione!"
-            exit 1
-          else
-            echo "✅ state.json presente"
-            cat state.json
-          fi
-
-      - name: Salva stato negli Artifacts
+      - name: Salva stato
         if: always()
         uses: actions/upload-artifact@v4
         with:
