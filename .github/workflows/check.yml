@@ -1,8 +1,8 @@
 name: Check DidUP
 
 on:
-schedule:
-  - cron: "*/15 * * * *"  # Ogni 15 minuti
+  schedule:
+    - cron: "7,22,37,52 * * * *"
   workflow_dispatch:
 
 permissions:
