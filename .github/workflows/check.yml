@@ -27,13 +27,13 @@ jobs:
           python-version: "3.12"
 
       - name: Installa dipendenze
-        run: pip install didupwrapper requests
+        run: pip install "didupwrapper>=0.1.1,<0.2" requests
 
       - name: Esegui monitor
         env:
-          DIDUP_SCHOOL: ${{ secrets.DIDUP_SCHOOL }}
-          DIDUP_USER: ${{ secrets.DIDUP_USER }}
-          DIDUP_PASSWORD: ${{ secrets.DIDUP_PASSWORD }}
+          DIDUP_SCHOOL: ${{ secrets.CODICE_SCUOLA }}
+          DIDUP_USER: ${{ secrets.USERNAME }}
+          DIDUP_PASSWORD: ${{ secrets.PASSWORD }}
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC || 'Morselli_alerts_didup' }}
         run: python monitor.py
 
@@ -51,6 +51,6 @@ jobs:
             echo "Nessuna modifica allo stato"
           else
             git commit -m "chore: aggiorna state.json"
-            git pull --rebase
-            git push
-          fi
+            git pull --rebase origin "$GITHUB_REF_NAME"
+            git push origin "HEAD:$GITHUB_REF_NAME"
+          fi 
