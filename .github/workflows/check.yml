@@ -1,5 +1,4 @@
-
-Name: Check DidUP
+name: Check DidUP
 
 on:
   schedule:
