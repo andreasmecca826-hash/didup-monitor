@@ -1,8 +1,7 @@
 import os
 import json
 import requests
-from datetime import datetime
-from argofamiglia import Argo
+from argofamiglia import Famiglia
 
 # Leggi le credenziali dai segreti di GitHub
 USERNAME = os.getenv("DIDUP_USERNAME")
@@ -29,7 +28,7 @@ def load_state():
                 return json.load(f)
         except:
             pass
-    return {"grades": [], "bacheca": []}
+    return []
 
 def save_state(state):
     with open(STATE_FILE, "w") as f:
@@ -41,7 +40,7 @@ def main():
         return
 
     print("Connessione a DidUP in corso...")
-    client = Argo()
+    client = Famiglia()
     
     try:
         client.login(USERNAME, PASSWORD)
@@ -50,71 +49,38 @@ def main():
         send_ntfy("Errore DidUP", "Impossibile effettuare il login: credenziali errate o servizio offline.")
         return
 
-    state = load_state()
-    
-    # --- 1. CONTROLLO VOTI ---
     try:
         grades = client.voti() or []
-        known_grades = set(tuple(g.items()) for g in state.get("grades", []))
-        
-        new_grades = []
-        current_grades_list = []
-        
-        for g in grades:
-            g_item = {
-                "materia": str(g.get("materia", "")),
-                "valore": str(g.get("valore", "")),
-                "data": str(g.get("data", "")),
-                "tipo": str(g.get("tipo", ""))
-            }
-            current_grades_list.append(g_item)
-            
-            g_tuple = tuple(g_item.items())
-            if g_tuple not in known_grades:
-                new_grades.append(g_item)
-
-        if new_grades and state.get("grades"):
-            for g in new_grades:
-                msg = f"Materia: {g['materia']}\nVoto: {g['valore']}\nData: {g['data']}\nTipo: {g['tipo']}"
-                send_ntfy("Nuovo Voto Registrato! 📚", msg)
-                print(f"Nuovo voto trovato: {g}")
-        
-        state["grades"] = current_grades_list
     except Exception as e:
         print(f"Errore nel recupero dei voti: {e}")
+        return
 
-    # --- 2. CONTROLLO BACHECA / CIRCOLARI ---
-    try:
-        bacheca_items = client.bacheca() or []
-        known_bacheca = set(str(item.get("ID", item.get("id", i))) for i, item in enumerate(state.get("bacheca", [])))
+    known_grades = set(tuple(g.items()) for g in load_state())
+    new_grades = []
+    current_grades_list = []
+
+    for g in grades:
+        g_item = {
+            "materia": str(g.get("materia", "")),
+            "valore": str(g.get("valore", "")),
+            "data": str(g.get("data", "")),
+            "tipo": str(g.get("tipo", ""))
+        }
+        current_grades_list.append(g_item)
         
-        new_bacheca = []
-        current_bacheca_list = []
-        
-        for item in bacheca_items:
-            item_id = str(item.get("ID", item.get("id", item.get("titolo", ""))))
-            item_data = {
-                "ID": item_id,
-                "titolo": str(item.get("titolo", "Nuova Circolare")),
-                "data": str(item.get("data", ""))
-            }
-            current_bacheca_list.append(item_data)
-            
-            if item_id not in known_bacheca:
-                new_bacheca.append(item_data)
+        g_tuple = tuple(g_item.items())
+        if g_tuple not in known_grades:
+            new_grades.append(g_item)
 
-        if new_bacheca and state.get("bacheca"):
-            for item in new_bacheca:
-                msg = f"Titolo: {item['titolo']}\nData: {item['data']}"
-                send_ntfy("Nuova Circolare in Bacheca! 📢", msg)
-                print(f"Nuova bacheca trovata: {item}")
-                
-        state["bacheca"] = current_bacheca_list
-    except Exception as e:
-        print(f"Errore nel recupero della bacheca: {e}")
-
-    save_state(state)
-    print("Controllo completato con successo.")
+    if new_grades and load_state():
+        for g in new_grades:
+            msg = f"Materia: {g['materia']}\nVoto: {g['valore']}\nData: {g['data']}\nTipo: {g['tipo']}"
+            send_ntfy("Nuovo Voto Registrato! 📚", msg)
+            print(f"Nuovo voto trovato: {g}")
+    
+    save_state(current_grades_list)
+    print("Controllo voti completato con successo.")
 
 if __name__ == "__main__":
     main()
+ 
