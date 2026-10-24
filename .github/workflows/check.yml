@@ -1,40 +1,79 @@
-name: Check DidUP Debug
+name: Check DidUP
 
 on:
-  workflow_dispatch:  # Solo manuale per ora
+  schedule:
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: didup-monitor
+  cancel-in-progress: false
 
 jobs:
-  debug-check:
+  check:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+
     steps:
-      - name: Test 1 - Checkout
+      - name: Checkout
         uses: actions/checkout@v4
-        id: checkout_step
-      
-      - name: Test 2 - Echo
-        run: echo "Checkout riuscito!"
-      
-      - name: Test 3 - Setup Python
+
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-        id: python_step
-      
-      - name: Test 4 - Python Version
-        run: python --version
-      
-      - name: Test 5 - Install Dipendenze
+
+      - name: Installa dipendenze
         run: pip install "didupwrapper>=0.1.1,<0.2" requests
-      
-      - name: Test 6 - Crea state.json finto
+
+      - name: Prova a scaricare stato precedente
+        id: download_state
+        uses: actions/download-artifact@v4
+        with:
+          name: didup-state
+          path: .
+        continue-on-error: true
+
+      - name: Inizializza state.json se mancante
         run: |
-          echo '{"test": true}' > state.json
-          cat state.json
-      
-      - name: Test 7 - Upload Artifact
+          if [ ! -f state.json ]; then
+            echo '{"last_check": null, "sent_alerts": []}' > state.json
+            echo "✅ Creato state.json iniziale"
+          else
+            echo "✅ Stato precedente recuperato"
+          fi
+
+      - name: Mostra stato corrente
+        run: cat state.json
+
+      - name: Esegui monitor DidUP
+        id: run_monitor
+        env:
+          DIDUP_SCHOOL: ${{ secrets.CODICE_SCUOLA }}
+          DIDUP_USER: ${{ secrets.USERNAME }}
+          DIDUP_PASSWORD: ${{ secrets.PASSWORD }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC || 'Morselli_alerts_didup' }}
+        run: python monitor.py
+
+      - name: Verifica che state.json sia stato aggiornato
+        run: |
+          if [ ! -f state.json ]; then
+            echo "❌ ERRORE: state.json non esiste dopo l'esecuzione!"
+            exit 1
+          else
+            echo "✅ state.json presente"
+            cat state.json
+          fi
+
+      - name: Salva stato negli Artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: didup-state-test
+          name: didup-state
           path: state.json
+          retention-days: 3
 
-          retention-days: 1
+          overwrite: true
