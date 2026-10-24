@@ -2,7 +2,7 @@ import os
 import json
 import requests
 from datetime import datetime
-from argofamiglia import Famiglia
+from argofamiglia import Argo
 
 # Leggi le credenziali dai segreti di GitHub
 USERNAME = os.getenv("DIDUP_USERNAME")
@@ -41,7 +41,7 @@ def main():
         return
 
     print("Connessione a DidUP in corso...")
-    client = Famiglia()
+    client = Argo()
     
     try:
         client.login(USERNAME, PASSWORD)
@@ -61,7 +61,6 @@ def main():
         current_grades_list = []
         
         for g in grades:
-            # Creiamo un identificativo unico per il voto basato su materia, valore e data
             g_item = {
                 "materia": str(g.get("materia", "")),
                 "valore": str(g.get("valore", "")),
@@ -74,7 +73,7 @@ def main():
             if g_tuple not in known_grades:
                 new_grades.append(g_item)
 
-        if new_grades and state.get("grades"): # Evita di notificare tutti i voti storici al primo avvio
+        if new_grades and state.get("grades"):
             for g in new_grades:
                 msg = f"Materia: {g['materia']}\nVoto: {g['valore']}\nData: {g['data']}\nTipo: {g['tipo']}"
                 send_ntfy("Nuovo Voto Registrato! 📚", msg)
@@ -104,7 +103,7 @@ def main():
             if item_id not in known_bacheca:
                 new_bacheca.append(item_data)
 
-        if new_bacheca and state.get("bacheca"): # Evita di notificare lo storico al primo avvio
+        if new_bacheca and state.get("bacheca"):
             for item in new_bacheca:
                 msg = f"Titolo: {item['titolo']}\nData: {item['data']}"
                 send_ntfy("Nuova Circolare in Bacheca! 📢", msg)
@@ -119,4 +118,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
