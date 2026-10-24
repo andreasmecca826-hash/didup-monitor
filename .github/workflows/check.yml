@@ -2,6 +2,7 @@ name: Check DidUP
 
 on:
   schedule:
+    # Ogni 15 minuti, ma sfalsato per evitare picchi
     - cron: "7,22,37,52 * * * *"
   workflow_dispatch:
 
@@ -19,24 +20,36 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4 # Versione stabile
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5 # Versione stabile
         with:
           python-version: "3.12"
 
       - name: Installa dipendenze
-        run: pip install "didupwrapper>=0.1.1,<0.2" requests
+        run: |
+          pip install "didupwrapper>=0.1.1,<0.2" requests
 
-      - name: Ripristina state.json precedente
+      - name: Scarica stato precedente (opzionale)
+        id: download_state
         uses: actions/download-artifact@v4
         with:
           name: didup-state
           path: .
         continue-on-error: true
 
+      - name: Verifica e inizializza state.json se mancante
+        run: |
+          if [ ! -f "state.json" ]; then
+            echo "Nessuno stato precedente trovato. Inizializzo state.json vuoto."
+            echo '{"last_check": null, "alerts": []}' > state.json
+          else
+            echo "Stato precedente recuperato con successo."
+          fi
+
       - name: Esegui monitor
+        id: run_monitor
         env:
           DIDUP_SCHOOL: ${{ secrets.CODICE_SCUOLA }}
           DIDUP_USER: ${{ secrets.USERNAME }}
@@ -44,10 +57,12 @@ jobs:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC || 'Morselli_alerts_didup' }}
         run: python monitor.py
 
-      - name: Salva state.json negli Artifacts
-        if: always()
+      - name: Salva stato negli Artifacts
+        if: always() # Salva sempre, anche se lo script fallisce (per debug)
         uses: actions/upload-artifact@v4
         with:
           name: didup-state
           path: state.json
-          retention-days: 7
+          retention-days: 3 # Ridotto a 3 giorni per non intasare
+
+          if-no-files-found: error # Fallisce se non trova il file da salvare (debug)
