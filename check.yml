@@ -1,9 +1,13 @@
+
 name: DidUP Monitor
 
 on:
   schedule:
     - cron: '*/15 * * * *'
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   check-grades:
@@ -36,3 +40,4 @@ jobs:
         with:
           commit_message: "Aggiornato stato controllo DidUP [skip ci]"
           file_patterns: last_state.json
+
