@@ -1,4 +1,5 @@
-name: Check DidUP
+
+Name: Check DidUP
 
 on:
   schedule:
@@ -6,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: didup-monitor
@@ -29,6 +30,13 @@ jobs:
       - name: Installa dipendenze
         run: pip install "didupwrapper>=0.1.1,<0.2" requests
 
+      - name: Ripristina state.json precedente
+        uses: actions/download-artifact@v4
+        with:
+          name: didup-state
+          path: .
+        continue-on-error: true
+
       - name: Esegui monitor
         env:
           DIDUP_SCHOOL: ${{ secrets.CODICE_SCUOLA }}
@@ -37,20 +45,10 @@ jobs:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC || 'Morselli_alerts_didup' }}
         run: python monitor.py
 
-      - name: Salva state.json
+      - name: Salva state.json negli Artifacts
         if: always()
-        run: |
-          if [ ! -f state.json ]; then
-            echo "state.json non esiste, niente da salvare"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add state.json
-          if git diff --cached --quiet; then
-            echo "Nessuna modifica allo stato"
-          else
-            git commit -m "chore: aggiorna state.json"
-            git pull --rebase origin "$GITHUB_REF_NAME"
-            git push origin "HEAD:$GITHUB_REF_NAME"
-          fi 
+        uses: actions/upload-artifact@v4
+        with:
+          name: didup-state
+          path: state.json
+          retention-days: 7
