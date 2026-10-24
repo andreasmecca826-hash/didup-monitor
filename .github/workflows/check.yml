@@ -37,14 +37,15 @@ jobs:
           path: .
         continue-on-error: true
 
-      - name: Inizializza state.json se mancante
+            - name: Inizializza state.json se mancante
         run: |
           if [ ! -f state.json ]; then
-            echo '{"last_check": null, "sent_alerts": []}' > state.json
-            echo "✅ Creato state.json iniziale"
+            echo '{}' > state.json
+            echo "✅ Creato state.json vuoto"
           else
             echo "✅ Stato precedente recuperato"
           fi
+    
 
       - name: Mostra stato corrente
         run: cat state.json
