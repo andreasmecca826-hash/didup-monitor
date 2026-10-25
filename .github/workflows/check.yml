@@ -27,13 +27,12 @@ jobs:
       - name: Installa dipendenze
         run: pip install "didupwrapper>=0.1.1,<0.2" requests
 
-            - name: Scarica stato precedente
+      - name: Scarica stato precedente
         uses: dawidd6/action-download-artifact@v3
         with:
           name: didup-state
           path: .
           if_no_artifact_found: ignore
-
 
       - name: Inizializza state.json se mancante
         run: |
@@ -56,7 +55,6 @@ jobs:
           name: didup-state
           path: state.json
           retention-days: 30
-
           overwrite: true
 
-   # resync 24-10-2026
+   
