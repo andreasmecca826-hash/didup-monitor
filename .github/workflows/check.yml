@@ -1,7 +1,7 @@
 name: Check DidUP
 
 
-on:
+'on':
 workflow_dispatch:
 
 
@@ -23,8 +23,6 @@ timeout-minutes: 5
 steps:
   - name: Checkout
     uses: actions/checkout@v6
-    with:
-      ref: ${{ github.ref_name }}
 
   - name: Setup Python
     uses: actions/setup-python@v6
@@ -36,13 +34,8 @@ steps:
 
   - name: Inizializza file di stato se mancanti
     run: |
-      if [ ! -f state.json ]; then
-        echo '{}' > state.json
-      fi
-
-      if [ ! -f history.md ]; then
-        printf '# Storico DidUP\n\nEventi registrati automaticamente dal monitor.\n' > history.md
-      fi
+      [ -f state.json ] || echo '{}' > state.json
+      [ -f history.md ] || printf '# Storico DidUP\n\nEventi registrati automaticamente dal monitor.\n' > history.md
 
   - name: Esegui monitor
     env:
@@ -54,8 +47,6 @@ steps:
 
   - name: Salva JSON e storico nel repository
     if: always()
-    env:
-      GH_TOKEN: ${{ github.token }}
     run: |
       git config user.name "github-actions[bot]"
       git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
