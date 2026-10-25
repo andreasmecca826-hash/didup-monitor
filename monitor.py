@@ -33,7 +33,8 @@ STATE_FILE = Path(os.environ.get("STATE_FILE") or "state.json")
 # Oltre questa soglia di novità per sezione, invio un solo riepilogo
 MAX_NOTIFICHE = 10
 
-# Configurazione Retry per i server Argo
+# Tentativi di login/download per ogni esecuzione (massimo 3 login in totale).
+# Il 1° usa la versione app di default, dal 2° si rileva la versione dallo store.
 MAX_RETRIES = 3
 RETRY_DELAY = 5  # secondi di attesa tra un tentativo e l'altro
 
@@ -227,45 +228,56 @@ def process_section(
     state[name] = sorted(seen)
 
 
+def is_auth_error(exc: BaseException) -> bool:
+    """Credenziali rifiutate: riconosco l'AuthError di didupwrapper dal nome della classe."""
+    return type(exc).__name__ == "AuthError"
+
+
 def fetch_all_once(
-    school: str, user: str, password: str, apply_filters: bool = True
+    school: str, user: str, password: str, apply_filters: bool, auto: bool
 ) -> dict[str, list[Any] | None]:
-    last_exc: Exception | None = None
-    for auto in (False, True):
-        try:
-            kwargs = {"auto_versione": True} if auto else {}
-            with DiDUPClientSync(school, user, password, **kwargs) as didup:
-                out: dict[str, list[Any] | None] = {}
-                for name, section in SECTIONS.items():
-                    try:
-                        items = list(getattr(didup, section.method)())
-                        if apply_filters and section.keep:
-                            items = [i for i in items if section.keep(i)]
-                        out[name] = items
-                    except Exception:
-                        log.exception("[%s] download fallito", name)
-                        out[name] = None
-                return out
-        except Exception as exc:
-            last_exc = exc
-            log.debug("Tentativo (auto_versione=%s) fallito: %s", auto, exc)
-    raise RuntimeError(f"Login DidUP non riuscito: {last_exc}")
+    """Un solo login + download di tutte le sezioni."""
+    kwargs = {"auto_versione": True} if auto else {}
+    with DiDUPClientSync(school, user, password, **kwargs) as didup:
+        out: dict[str, list[Any] | None] = {}
+        for name, section in SECTIONS.items():
+            try:
+                items = list(getattr(didup, section.method)())
+                if apply_filters and section.keep:
+                    items = [i for i in items if section.keep(i)]
+                out[name] = items
+            except Exception:
+                log.exception("[%s] download fallito", name)
+                out[name] = None
+        return out
 
 
 def fetch_all(
     school: str, user: str, password: str, apply_filters: bool = True
 ) -> dict[str, list[Any] | None]:
-    """Esegue il fetch con tentativi multipli (retry) in caso di problemi di rete o server."""
+    """Fino a MAX_RETRIES login. Se le credenziali vengono rifiutate si ferma subito
+    (al massimo 2 tentativi: uno con versione di default, uno con versione rilevata),
+    per non rischiare il blocco dell'account."""
+    last_exc: Exception | None = None
     for attempt in range(1, MAX_RETRIES + 1):
+        auto = attempt > 1
         try:
-            return fetch_all_once(school, user, password, apply_filters)
+            return fetch_all_once(school, user, password, apply_filters, auto)
         except Exception as exc:
-            log.warning("Tentativo %d/%d fallito: %s", attempt, MAX_RETRIES, exc)
-            if attempt < MAX_RETRIES:
+            last_exc = exc
+            auth = is_auth_error(exc)
+            log.warning("Tentativo %d/%d fallito (%s): %s", attempt, MAX_RETRIES, type(exc).__name__, exc)
+            if auth and auto:
+                raise RuntimeError(
+                    "Credenziali rifiutate da DidUP: non riprovo. "
+                    "Controlla codice scuola, username e password nei secrets."
+                ) from exc
+            if attempt < MAX_RETRIES and not auth:
                 log.info("Attesa di %d secondi prima del prossimo tentativo...", RETRY_DELAY)
                 time.sleep(RETRY_DELAY)
-            else:
-                raise RuntimeError(f"Tutti i {MAX_RETRIES} tentativi di connessione a DidUP sono falliti.")
+    raise RuntimeError(
+        f"Tutti i {MAX_RETRIES} tentativi di connessione a DidUP sono falliti: {last_exc}"
+    ) from last_exc
 
 
 def main() -> int:
