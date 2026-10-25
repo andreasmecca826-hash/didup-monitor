@@ -19,6 +19,7 @@ import json
 import logging
 import os
 import sys
+import time
 from pathlib import Path
 from typing import Any, Callable, NamedTuple
 
@@ -32,8 +33,11 @@ STATE_FILE = Path(os.environ.get("STATE_FILE") or "state.json")
 # Oltre questa soglia di novità per sezione, invio un solo riepilogo
 MAX_NOTIFICHE = 10
 
+# Configurazione Retry per i server Argo
+MAX_RETRIES = 3
+RETRY_DELAY = 5  # secondi di attesa tra un tentativo e l'altro
+
 # Campi che cambiano nel tempo senza che l'elemento sia "nuovo" (es. presa visione):
-# vengono ignorati nel calcolo dell'hash che identifica ogni elemento.
 NOISY_HINTS = ("visione", "letto", "letta", "conferma", "read")
 
 # Possibili nomi del campo "compiti" nelle lezioni del registro
@@ -43,11 +47,14 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 log = logging.getLogger("monitor")
 
 
-# ----------------------------------------------------------------- utilità
 def as_dict(item: Any) -> dict[str, Any]:
+    if isinstance(item, dict):
+        return item
     if hasattr(item, "model_dump"):  # Pydantic v2
         return item.model_dump(mode="json")
-    return dict(vars(item))
+    if hasattr(item, "__dict__"):
+        return dict(vars(item))
+    return {}
 
 
 def item_key(item: Any, id_fields: tuple[str, ...]) -> str:
@@ -75,7 +82,6 @@ def first_attr(item: Any, names: tuple[str, ...], default: str = "") -> str:
     return default
 
 
-# ----------------------------------------------------------------- stato
 def load_state() -> dict[str, list[str]]:
     if not STATE_FILE.exists():
         return {}
@@ -96,7 +102,6 @@ def save_state(state: dict[str, list[str]]) -> None:
     tmp.replace(STATE_FILE)
 
 
-# ----------------------------------------------------------------- ntfy
 def notify(title: str, message: str, tags: list[str], priority: int = 3) -> bool:
     payload = {
         "topic": NTFY_TOPIC,
@@ -114,12 +119,10 @@ def notify(title: str, message: str, tags: list[str], priority: int = 3) -> bool
         return False
 
 
-# ----------------------------------------------------------------- formattazione
 Msg = tuple[str, str, list[str]]
 
 
 def fmt_voto(v: Any) -> Msg:
-    # Il valore del voto non compare nella notifica (si scopre aprendo DidUP).
     materia = first_attr(v, ("des_materia",), "Materia")
     return "Nuovo voto", f"{materia}: apri DidUP per vedere il voto", ["books"]
 
@@ -139,7 +142,6 @@ def fmt_bacheca(c: Any) -> Msg:
 
 
 def fmt_nota(n: Any) -> Msg:
-    # Contenuto volutamente omesso: il canale ntfy è pubblico.
     return "Nuova nota sul registro", "Apri DidUP per leggerla", ["warning"]
 
 
@@ -172,13 +174,12 @@ def has_compiti(r: Any) -> bool:
     return bool(first_attr(r, COMPITI_FIELDS).strip())
 
 
-# ----------------------------------------------------------------- sezioni
 class Section(NamedTuple):
-    method: str                                  # metodo di didupwrapper
+    method: str
     formatter: Callable[[Any], Msg]
-    id_fields: tuple[str, ...] = ()              # vuoto = identifico con l'hash
-    keep: Callable[[Any], bool] | None = None    # filtro sugli elementi
-    required: bool = False                       # se fallisce, il workflow va in errore
+    id_fields: tuple[str, ...] = ()
+    keep: Callable[[Any], bool] | None = None
+    required: bool = False
 
 
 SECTIONS: dict[str, Section] = {
@@ -193,7 +194,6 @@ SECTIONS: dict[str, Section] = {
 }
 
 
-# ----------------------------------------------------------------- logica
 def process_section(
     name: str, items: list[Any], state: dict[str, list[str]], section: Section
 ) -> None:
@@ -201,12 +201,12 @@ def process_section(
     for item in items:
         base = key = item_key(item, section.id_fields)
         n = 1
-        while key in current:  # elementi identici (stesso hash) restano distinti
+        while key in current:
             n += 1
             key = f"{base}#{n}"
         current[key] = item
 
-    if name not in state:  # primo avvio della sezione: salvo la base, nessuna notifica
+    if name not in state:
         state[name] = sorted(current)
         log.info("[%s] primo avvio: %d elementi salvati, nessuna notifica", name, len(current))
         return
@@ -222,15 +222,14 @@ def process_section(
         for key, item in new:
             title, message, tags = section.formatter(item)
             if notify(title, message, tags):
-                seen.add(key)  # se ntfy fallisce, ritenta alla prossima esecuzione
+                seen.add(key)
 
     state[name] = sorted(seen)
 
 
-def fetch_all(
+def fetch_all_once(
     school: str, user: str, password: str, apply_filters: bool = True
 ) -> dict[str, list[Any] | None]:
-    """Login + download. Riprova con auto-rilevamento versione app se il primo tentativo fallisce."""
     last_exc: Exception | None = None
     for auto in (False, True):
         try:
@@ -240,8 +239,6 @@ def fetch_all(
                 for name, section in SECTIONS.items():
                     try:
                         items = list(getattr(didup, section.method)())
-                        campi = list(as_dict(items[0]).keys()) if items else []
-                        log.info("[%s] %d elementi dal server; campi: %s", name, len(items), campi)
                         if apply_filters and section.keep:
                             items = [i for i in items if section.keep(i)]
                         out[name] = items
@@ -249,10 +246,26 @@ def fetch_all(
                         log.exception("[%s] download fallito", name)
                         out[name] = None
                 return out
-        except Exception as exc:  # login/rete
+        except Exception as exc:
             last_exc = exc
-            log.warning("Tentativo (auto_versione=%s) fallito: %s", auto, exc)
+            log.debug("Tentativo (auto_versione=%s) fallito: %s", auto, exc)
     raise RuntimeError(f"Login DidUP non riuscito: {last_exc}")
+
+
+def fetch_all(
+    school: str, user: str, password: str, apply_filters: bool = True
+) -> dict[str, list[Any] | None]:
+    """Esegue il fetch con tentativi multipli (retry) in caso di problemi di rete o server."""
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            return fetch_all_once(school, user, password, apply_filters)
+        except Exception as exc:
+            log.warning("Tentativo %d/%d fallito: %s", attempt, MAX_RETRIES, exc)
+            if attempt < MAX_RETRIES:
+                log.info("Attesa di %d secondi prima del prossimo tentativo...", RETRY_DELAY)
+                time.sleep(RETRY_DELAY)
+            else:
+                raise RuntimeError(f"Tutti i {MAX_RETRIES} tentativi di connessione a DidUP sono falliti.")
 
 
 def main() -> int:
@@ -283,7 +296,7 @@ def main() -> int:
         if items is None:
             if section.required:
                 ok = False
-            else:  # sezione opzionale: avviso visibile in Actions, ma il workflow resta verde
+            else:
                 print(f"::warning::Sezione '{name}' non disponibile, la salto")
             continue
         process_section(name, items, state, section)
