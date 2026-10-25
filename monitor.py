@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """Monitor DidUP (Argo Famiglia): voti, bacheca, note, promemoria e compiti -> ntfy.
 
-Novita' di questa versione:
+Funzionalita':
   * media generale dei voti con trend (freccia su / giu' / stabile)
   * priorita' ntfy differenziate: urgente per insufficienze e note, silenziosa per i compiti
   * storico persistente in history.md
-  * grafico dell'andamento in voti_trend.png (richiede matplotlib)
 
 Variabili d'ambiente (da impostare come GitHub Secrets):
     DIDUP_SCHOOL    codice scuola (es. SC12345)
@@ -14,7 +13,6 @@ Variabili d'ambiente (da impostare come GitHub Secrets):
     NTFY_TOPIC      (opzionale) default: Morselli_alerts_didup
     STATE_FILE      (opzionale) default: state.json
     HISTORY_FILE    (opzionale) default: history.md
-    CHART_FILE      (opzionale) default: voti_trend.png
 
 Uso:
     python monitor.py          # esecuzione normale
@@ -29,28 +27,17 @@ import os
 import re
 import sys
 import time
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, NamedTuple
 
 import requests
 from didupwrapper import DiDUPClientSync
 
-try:  # il grafico e' opzionale: senza matplotlib il resto funziona lo stesso
-    import matplotlib
-
-    matplotlib.use("Agg")  # backend senza schermo (serve su GitHub Actions)
-    import matplotlib.pyplot as plt
-
-    HAS_MATPLOTLIB = True
-except Exception:  # pragma: no cover
-    HAS_MATPLOTLIB = False
-
 NTFY_TOPIC = os.environ.get("NTFY_TOPIC") or "Morselli_alerts_didup"
 NTFY_URL = "https://ntfy.sh"
 STATE_FILE = Path(os.environ.get("STATE_FILE") or "state.json")
 HISTORY_FILE = Path(os.environ.get("HISTORY_FILE") or "history.md")
-CHART_FILE = Path(os.environ.get("CHART_FILE") or "voti_trend.png")
 
 # Oltre questa soglia di novita' per sezione, invio un solo riepilogo
 MAX_NOTIFICHE = 10
@@ -232,61 +219,6 @@ def append_history(eventi: list[tuple[str, str]]) -> None:
     with HISTORY_FILE.open("a", encoding="utf-8") as fh:
         fh.write("\n".join(righe) + "\n")
     log.info("Storico aggiornato: %d eventi in %s", len(eventi), HISTORY_FILE)
-
-
-# ------------------------------------------------------------------ grafico
-FORMATI_DATA = ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y", "%Y/%m/%d", "%d.%m.%Y")
-
-
-def parse_data(raw: str) -> date | None:
-    testo = (raw or "").strip()[:10]
-    for formato in FORMATI_DATA:
-        try:
-            return datetime.strptime(testo, formato).date()
-        except ValueError:
-            continue
-    return None
-
-
-def render_chart(voti: list[Any]) -> bool:
-    if not HAS_MATPLOTLIB:
-        log.warning("matplotlib non installato: salto il grafico")
-        return False
-
-    punti: list[tuple[tuple[int, int, int], float]] = []
-    for indice, v in enumerate(voti):
-        valore = voto_valore(v)
-        if valore is None:
-            continue
-        data = parse_data(first_attr(v, ("dat_giorno", "data")))
-        # le date note vengono ordinate cronologicamente, le altre restano in coda
-        chiave = (0, data.toordinal(), indice) if data else (1, 0, indice)
-        punti.append((chiave, valore))
-
-    if not punti:
-        log.info("nessun voto numerico: grafico non generato")
-        return False
-
-    punti.sort(key=lambda p: p[0])
-    voti_y = [p[1] for p in punti]
-    asse_x = list(range(1, len(voti_y) + 1))
-    media = sum(voti_y) / len(voti_y)
-
-    figura, assi = plt.subplots(figsize=(9, 4.5), dpi=120)
-    assi.plot(asse_x, voti_y, marker="o", color="#6d4aff", linewidth=1.8, markersize=5, label="Voti")
-    assi.axhline(SUFFICIENZA, color="#d9534f", linestyle="--", linewidth=1.2, label="Sufficienza (6)")
-    assi.axhline(media, color="#2e9e5b", linestyle=":", linewidth=1.2, label=f"Media ({media:.2f})")
-    assi.set_title("Andamento dei voti")
-    assi.set_xlabel("Voti in ordine cronologico")
-    assi.set_ylabel("Voto")
-    assi.set_ylim(0, max(10.5, max(voti_y) + 0.5))
-    assi.grid(True, alpha=0.25)
-    assi.legend(loc="lower right", fontsize=8)
-    figura.tight_layout()
-    figura.savefig(CHART_FILE)
-    plt.close(figura)
-    log.info("Grafico salvato in %s", CHART_FILE)
-    return True
 
 
 # --------------------------------------------------------------- formattatori
@@ -533,9 +465,6 @@ def main() -> int:
 
     if eventi:
         append_history(eventi)
-
-    if voti:
-        render_chart(voti)
 
     save_state(state)
     return 0 if ok else 1
