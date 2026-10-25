@@ -1,64 +1,76 @@
-name: Check DidUP
-
+Name: Check DidUP
 
 on:
-workflow_dispatch:
-
+  workflow_dispatch:
 
 permissions:
-contents: write
-
+  contents: write
 
 concurrency:
-group: didup-monitor
-cancel-in-progress: false
-
+  group: didup-monitor
+  cancel-in-progress: false
 
 jobs:
-check:
-runs-on: ubuntu-latest
-timeout-minutes: 5
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
 
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref_name }}
 
-steps:
-  - name: Checkout
-    uses: actions/checkout@v6
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
 
-  - name: Setup Python
-    uses: actions/setup-python@v6
-    with:
-      python-version: "3.12"
+      - name: Installa dipendenze
+        run: python -m pip install "didupwrapper>=0.1.1,<0.2" requests
 
-  - name: Installa dipendenze
-    run: python -m pip install "didupwrapper>=0.1.1,<0.2" requests
+      - name: Inizializza file di stato se mancanti
+        run: |
+          if [ ! -f state.json ]; then
+            echo '{}' > state.json
+          fi
 
-  - name: Inizializza file di stato
-    run: |
-      [ -f state.json ] || echo '{}' > state.json
-      [ -f history.md ] || printf '# Storico DidUP\n\nEventi registrati automaticamente dal monitor.\n' > history.md
+          if [ ! -f grades.json ]; then
+            echo '{}' > grades.json
+          fi
 
-  - name: Esegui monitor
-    env:
-      DIDUP_SCHOOL: ${{ secrets.CODICE_SCUOLA }}
-      DIDUP_USER: ${{ secrets.USERNAME }}
-      DIDUP_PASSWORD: ${{ secrets.PASSWORD }}
-      NTFY_TOPIC: ${{ secrets.NTFY_TOPIC || 'Morselli_alerts_didup' }}
-    run: python monitor.py
+          if [ ! -f history.md ]; then
+            printf '# Storico DidUP\n\nEventi registrati automaticamente dal monitor.\n' > history.md
+          fi
 
-  - name: Salva JSON e storico nel repository
-    if: always()
-    run: |
-      git config user.name "github-actions[bot]"
-      git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - name: Esegui monitor
+        env:
+          DIDUP_SCHOOL: ${{ secrets.CODICE_SCUOLA }}
+          DIDUP_USER: ${{ secrets.USERNAME }}
+          DIDUP_PASSWORD: ${{ secrets.PASSWORD }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC || 'Morselli_alerts_didup' }}
+        run: python monitor.py
 
-      git add state.json history.md
+      - name: Prepara il file grades.json per l'app
+        run: |
+          # Copia state.json come grades.json (oppure adatta se il tuo script genera un formato specifico)
+          if [ -f state.json ]; then
+            cp state.json grades.json
+          fi
 
-      if ! git diff --cached --quiet; then
-        git commit -m "Aggiorna stato monitor DidUP"
-        git push origin "HEAD:${GITHUB_REF_NAME}"
-      else
-        echo "Nessuna modifica da salvare."
-      fi
+      - name: Salva JSON e storico nel repository
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+          git add state.json grades.json history.md
 
-
+          if ! git diff --cached --quiet; then
+            git commit -m "Aggiorna dati voti e stato DidUP"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          else
+            echo "Nessuna modifica da salvare."
+          fi
