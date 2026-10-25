@@ -207,11 +207,38 @@ def build_voto_data(data: dict[str, list[Any] | None], stats: dict[str, Any]) ->
             "completed": False,
         })
 
+    eventi = data.get("assenze") or []
+    assenze = sum(first_attr(evento, ("cod_evento",)).upper() == "A" for evento in eventi)
+    ritardi = sum(first_attr(evento, ("cod_evento",)).upper() == "I" for evento in eventi)
+    uscite = sum(first_attr(evento, ("cod_evento",)).upper() == "U" for evento in eventi)
+    notifications = []
+    for section, kind, title_default in (("note", "note", "Nota disciplinare"), ("bacheca", "bacheca", "Comunicazione")):
+        for index, item in enumerate(data.get(section) or []):
+            title = first_attr(item, ("des_oggetto", "oggetto", "titolo", "des_titolo"), title_default)
+            message = first_attr(item, ("des_messaggio", "messaggio", "testo", "des_testo", "nota", "descrizione"))
+            event_date = first_attr(item, ("dat_giorno", "dat_evento", "data"))
+            notifications.append({
+                "id": item_key(item, ("prg_messaggio", "prg_bacheca", "prg", "id")) or f"{kind}-{index}",
+                "type": "note" if kind == "note" else "notice",
+                "title": title,
+                "message": message or None,
+                "date": event_date or None,
+                "read": False,
+            })
+
     return {
         "updatedAt": datetime.now(timezone.utc).isoformat(),
         "subjects": list(grouped.values()),
         "assignments": assignments,
-        "notifications": [],
+        "notifications": notifications,
+        "attendance": {
+            "absenceDays": assenze,
+            "absenceHours": assenze * 6,
+            "delays": ritardi,
+            "earlyExits": uscite,
+            "annualHours": 990,
+            "absenceLimitHours": 247.5,
+        },
     }
 
 
@@ -382,6 +409,7 @@ class Section(NamedTuple):
 
 SECTIONS: dict[str, Section] = {
     "voti": Section("get_voti", fmt_voto, required=True),
+    "assenze": Section("get_assenze"),
     "bacheca": Section(
         "get_bacheca", fmt_bacheca,
         id_fields=("prg_messaggio", "prg_bacheca", "prg", "id"), required=True,
