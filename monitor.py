@@ -86,6 +86,10 @@ def first_attr(item: Any, names: tuple[str, ...], default: str = "") -> str:
     return default
 
 
+def slug(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-") or "materia"
+
+
 def item_key(item: Any, id_fields: tuple[str, ...]) -> str:
     data = as_dict(item)
     for field in id_fields:
