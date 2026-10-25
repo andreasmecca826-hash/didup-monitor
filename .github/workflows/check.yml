@@ -5,6 +5,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: didup-monitor
@@ -56,5 +57,3 @@ jobs:
           path: state.json
           retention-days: 30
           overwrite: true
-
-   
