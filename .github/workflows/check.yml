@@ -27,12 +27,13 @@ jobs:
       - name: Installa dipendenze
         run: pip install "didupwrapper>=0.1.1,<0.2" requests
 
-      - name: Prova a scaricare stato precedente
-        uses: actions/download-artifact@v4
+            - name: Scarica stato precedente
+        uses: dawidd6/action-download-artifact@v3
         with:
           name: didup-state
           path: .
-        continue-on-error: true
+          if_no_artifact_found: ignore
+
 
       - name: Inizializza state.json se mancante
         run: |
