@@ -1,12 +1,20 @@
 #!/usr/bin/env python3
 """Monitor DidUP (Argo Famiglia): voti, bacheca, note, promemoria e compiti -> ntfy.
 
+Novita' di questa versione:
+  * media generale dei voti con trend (freccia su / giu' / stabile)
+  * priorita' ntfy differenziate: urgente per insufficienze e note, silenziosa per i compiti
+  * storico persistente in history.md
+  * grafico dell'andamento in voti_trend.png (richiede matplotlib)
+
 Variabili d'ambiente (da impostare come GitHub Secrets):
     DIDUP_SCHOOL    codice scuola (es. SC12345)
     DIDUP_USER      nome utente
     DIDUP_PASSWORD  password
     NTFY_TOPIC      (opzionale) default: Morselli_alerts_didup
     STATE_FILE      (opzionale) default: state.json
+    HISTORY_FILE    (opzionale) default: history.md
+    CHART_FILE      (opzionale) default: voti_trend.png
 
 Uso:
     python monitor.py          # esecuzione normale
@@ -18,25 +26,47 @@ import hashlib
 import json
 import logging
 import os
+import re
 import sys
 import time
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, NamedTuple
 
 import requests
 from didupwrapper import DiDUPClientSync
 
+try:  # il grafico e' opzionale: senza matplotlib il resto funziona lo stesso
+    import matplotlib
+
+    matplotlib.use("Agg")  # backend senza schermo (serve su GitHub Actions)
+    import matplotlib.pyplot as plt
+
+    HAS_MATPLOTLIB = True
+except Exception:  # pragma: no cover
+    HAS_MATPLOTLIB = False
+
 NTFY_TOPIC = os.environ.get("NTFY_TOPIC") or "Morselli_alerts_didup"
 NTFY_URL = "https://ntfy.sh"
 STATE_FILE = Path(os.environ.get("STATE_FILE") or "state.json")
+HISTORY_FILE = Path(os.environ.get("HISTORY_FILE") or "history.md")
+CHART_FILE = Path(os.environ.get("CHART_FILE") or "voti_trend.png")
 
-# Oltre questa soglia di novità per sezione, invio un solo riepilogo
+# Oltre questa soglia di novita' per sezione, invio un solo riepilogo
 MAX_NOTIFICHE = 10
 
 # Tentativi di login/download per ogni esecuzione (massimo 3 login in totale).
-# Il 1° usa la versione app di default, dal 2° si rileva la versione dallo store.
 MAX_RETRIES = 3
 RETRY_DELAY = 5  # secondi di attesa tra un tentativo e l'altro
+
+# Livelli di priorita' ntfy: 1 = minima (silenziosa) ... 5 = massima (urgente).
+# Il suono, la vibrazione e il pop-over dipendono da questo valore.
+PRIORITA_URGENTE = 5
+PRIORITA_ALTA = 4
+PRIORITA_NORMALE = 3
+PRIORITA_SILENZIOSA = 2
+
+SUFFICIENZA = 6.0
 
 # Campi che cambiano nel tempo senza che l'elemento sia "nuovo" (es. presa visione):
 NOISY_HINTS = ("visione", "letto", "letta", "conferma", "read")
@@ -48,6 +78,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 log = logging.getLogger("monitor")
 
 
+# ------------------------------------------------------------------ utilita'
 def as_dict(item: Any) -> dict[str, Any]:
     if isinstance(item, dict):
         return item
@@ -56,6 +87,16 @@ def as_dict(item: Any) -> dict[str, Any]:
     if hasattr(item, "__dict__"):
         return dict(vars(item))
     return {}
+
+
+def first_attr(item: Any, names: tuple[str, ...], default: str = "") -> str:
+    for name in names:
+        valore = getattr(item, name, None)
+        if valore in (None, "") and isinstance(item, dict):
+            valore = item.get(name)
+        if valore not in (None, ""):
+            return str(valore)
+    return default
 
 
 def item_key(item: Any, id_fields: tuple[str, ...]) -> str:
@@ -75,15 +116,65 @@ def item_key(item: Any, id_fields: tuple[str, ...]) -> str:
     return "h:" + hashlib.sha1(raw.encode()).hexdigest()[:16]
 
 
-def first_attr(item: Any, names: tuple[str, ...], default: str = "") -> str:
-    for name in names:
-        value = getattr(item, name, None)
-        if value not in (None, ""):
-            return str(value)
-    return default
+# ------------------------------------------------------- voti e statistiche
+NUMERO_RE = re.compile(r"\d+(?:[.,]\d+)?")
 
 
-def load_state() -> dict[str, list[str]]:
+def _to_float(raw: Any) -> float | None:
+    """Trasforma '7', '7.5', '7,5', '7½', '8+' nel numero corrispondente."""
+    if raw in (None, ""):
+        return None
+    testo = str(raw).strip().replace("½", ",5").replace(",", ".")
+    match = NUMERO_RE.search(testo)
+    if not match:
+        return None
+    try:
+        return float(match.group(0))
+    except ValueError:
+        return None
+
+
+def voto_valore(v: Any) -> float | None:
+    """Estrae il valore numerico di un voto, se esiste."""
+    for campo in ("dec_valore", "cod_codice", "valore", "voto"):
+        numero = _to_float(first_attr(v, (campo,)))
+        if numero is not None:
+            return numero
+    return None
+
+
+def compute_stats(voti: list[Any]) -> dict[str, Any]:
+    valori = [x for x in (voto_valore(v) for v in voti) if x is not None]
+    if not valori:
+        return {}
+    return {
+        "media": round(sum(valori) / len(valori), 2),
+        "num_voti": len(valori),
+        "minimo": min(valori),
+        "massimo": max(valori),
+    }
+
+
+def build_trend_line(stats: dict[str, Any], precedente: dict[str, Any]) -> str:
+    """Riga tipo 'Media generale: 7.42 ⬆️ (+0.15)' da mettere nelle notifiche."""
+    if not stats:
+        return ""
+    media = float(stats["media"])
+    vecchia = precedente.get("media")
+    if vecchia is None:
+        return f"📊 Media generale: {media:.2f}"
+    delta = media - float(vecchia)
+    if delta > 0.004:
+        freccia = "⬆️"
+    elif delta < -0.004:
+        freccia = "⬇️"
+    else:
+        freccia = "➡️"
+    return f"📊 Media generale: {media:.2f} {freccia} ({delta:+.2f})"
+
+
+# -------------------------------------------------------------------- stato
+def load_state() -> dict[str, Any]:
     if not STATE_FILE.exists():
         return {}
     try:
@@ -94,7 +185,7 @@ def load_state() -> dict[str, list[str]]:
         return {}
 
 
-def save_state(state: dict[str, list[str]]) -> None:
+def save_state(state: dict[str, Any]) -> None:
     tmp = STATE_FILE.with_suffix(".tmp")
     tmp.write_text(
         json.dumps(state, indent=2, ensure_ascii=False, sort_keys=True) + "\n",
@@ -103,7 +194,8 @@ def save_state(state: dict[str, list[str]]) -> None:
     tmp.replace(STATE_FILE)
 
 
-def notify(title: str, message: str, tags: list[str], priority: int = 3) -> bool:
+# --------------------------------------------------------------------- ntfy
+def notify(title: str, message: str, tags: list[str], priority: int = PRIORITA_NORMALE) -> bool:
     payload = {
         "topic": NTFY_TOPIC,
         "title": title,
@@ -120,15 +212,105 @@ def notify(title: str, message: str, tags: list[str], priority: int = 3) -> bool
         return False
 
 
-Msg = tuple[str, str, list[str]]
+# ---------------------------------------------------------------- storico md
+def ensure_history() -> None:
+    if not HISTORY_FILE.exists():
+        HISTORY_FILE.write_text(
+            "# Storico DidUP\n\nEventi registrati automaticamente dal monitor.\n",
+            encoding="utf-8",
+        )
 
 
-def fmt_voto(v: Any) -> Msg:
+def append_history(eventi: list[tuple[str, str]]) -> None:
+    if not eventi:
+        return
+    adesso = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    righe = [f"\n## {adesso}\n"]
+    for titolo, messaggio in eventi:
+        corpo = " — ".join(messaggio.splitlines())
+        righe.append(f"- **{titolo}** — {corpo}")
+    with HISTORY_FILE.open("a", encoding="utf-8") as fh:
+        fh.write("\n".join(righe) + "\n")
+    log.info("Storico aggiornato: %d eventi in %s", len(eventi), HISTORY_FILE)
+
+
+# ------------------------------------------------------------------ grafico
+FORMATI_DATA = ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y", "%Y/%m/%d", "%d.%m.%Y")
+
+
+def parse_data(raw: str) -> date | None:
+    testo = (raw or "").strip()[:10]
+    for formato in FORMATI_DATA:
+        try:
+            return datetime.strptime(testo, formato).date()
+        except ValueError:
+            continue
+    return None
+
+
+def render_chart(voti: list[Any]) -> bool:
+    if not HAS_MATPLOTLIB:
+        log.warning("matplotlib non installato: salto il grafico")
+        return False
+
+    punti: list[tuple[tuple[int, int, int], float]] = []
+    for indice, v in enumerate(voti):
+        valore = voto_valore(v)
+        if valore is None:
+            continue
+        data = parse_data(first_attr(v, ("dat_giorno", "data")))
+        # le date note vengono ordinate cronologicamente, le altre restano in coda
+        chiave = (0, data.toordinal(), indice) if data else (1, 0, indice)
+        punti.append((chiave, valore))
+
+    if not punti:
+        log.info("nessun voto numerico: grafico non generato")
+        return False
+
+    punti.sort(key=lambda p: p[0])
+    voti_y = [p[1] for p in punti]
+    asse_x = list(range(1, len(voti_y) + 1))
+    media = sum(voti_y) / len(voti_y)
+
+    figura, assi = plt.subplots(figsize=(9, 4.5), dpi=120)
+    assi.plot(asse_x, voti_y, marker="o", color="#6d4aff", linewidth=1.8, markersize=5, label="Voti")
+    assi.axhline(SUFFICIENZA, color="#d9534f", linestyle="--", linewidth=1.2, label="Sufficienza (6)")
+    assi.axhline(media, color="#2e9e5b", linestyle=":", linewidth=1.2, label=f"Media ({media:.2f})")
+    assi.set_title("Andamento dei voti")
+    assi.set_xlabel("Voti in ordine cronologico")
+    assi.set_ylabel("Voto")
+    assi.set_ylim(0, max(10.5, max(voti_y) + 0.5))
+    assi.grid(True, alpha=0.25)
+    assi.legend(loc="lower right", fontsize=8)
+    figura.tight_layout()
+    figura.savefig(CHART_FILE)
+    plt.close(figura)
+    log.info("Grafico salvato in %s", CHART_FILE)
+    return True
+
+
+# --------------------------------------------------------------- formattatori
+Msg = tuple[str, str, list[str], int]  # titolo, messaggio, tags, priorita'
+
+
+def fmt_voto(v: Any, ctx: dict[str, Any]) -> Msg:
     materia = first_attr(v, ("des_materia",), "Materia")
-    return "Nuovo voto", f"{materia}: apri DidUP per vedere il voto", ["books"]
+    valore = first_attr(v, ("cod_codice", "dec_valore"), "?")
+    numero = voto_valore(v)
+    righe = [f"{materia}: {valore}"]
+    if ctx.get("trend"):
+        righe.append(str(ctx["trend"]))
+    if numero is not None and numero < SUFFICIENZA:
+        return (
+            "❗ Insufficienza",
+            "\n".join(righe),
+            ["rotating_light", "books"],
+            PRIORITA_URGENTE,
+        )
+    return "Nuovo voto", "\n".join(righe), ["books"], PRIORITA_ALTA
 
 
-def fmt_bacheca(c: Any) -> Msg:
+def fmt_bacheca(c: Any, _ctx: dict[str, Any]) -> Msg:
     oggetto = first_attr(
         c, ("des_oggetto", "oggetto", "titolo", "des_titolo"), "Nuova comunicazione"
     )
@@ -139,14 +321,19 @@ def fmt_bacheca(c: Any) -> Msg:
         righe.append(f"Data: {data}")
     if testo:
         righe.append(testo)
-    return "Bacheca DidUP", "\n".join(righe), ["bell"]
+    return "Bacheca DidUP", "\n".join(righe), ["bell"], PRIORITA_NORMALE
 
 
-def fmt_nota(n: Any) -> Msg:
-    return "Nuova nota sul registro", "Apri DidUP per leggerla", ["warning"]
+def fmt_nota(_n: Any, _ctx: dict[str, Any]) -> Msg:
+    return (
+        "⚠️ Nuova nota sul registro",
+        "Apri DidUP per leggerla",
+        ["warning", "rotating_light"],
+        PRIORITA_URGENTE,
+    )
 
 
-def fmt_promemoria(p: Any) -> Msg:
+def fmt_promemoria(p: Any, _ctx: dict[str, Any]) -> Msg:
     testo = first_attr(
         p,
         ("des_annotazioni", "des_promemoria", "des_testo", "testo", "messaggio"),
@@ -156,10 +343,10 @@ def fmt_promemoria(p: Any) -> Msg:
     righe = [testo]
     if data:
         righe.append(f"Data: {data}")
-    return "Promemoria DidUP", "\n".join(righe), ["memo"]
+    return "Promemoria DidUP", "\n".join(righe), ["memo"], PRIORITA_NORMALE
 
 
-def fmt_compiti(r: Any) -> Msg:
+def fmt_compiti(r: Any, _ctx: dict[str, Any]) -> Msg:
     materia = first_attr(r, ("des_materia", "materia"), "Materia")
     testo = first_attr(r, COMPITI_FIELDS)
     data = first_attr(r, ("dat_compiti", "dat_consegna", "dat_giorno", "data"))
@@ -168,7 +355,7 @@ def fmt_compiti(r: Any) -> Msg:
         righe.append(f"Data: {data}")
     if testo:
         righe.append(testo)
-    return "Nuovi compiti", "\n".join(righe), ["pencil2"]
+    return "Nuovi compiti", "\n".join(righe), ["pencil2"], PRIORITA_SILENZIOSA
 
 
 def has_compiti(r: Any) -> bool:
@@ -177,7 +364,7 @@ def has_compiti(r: Any) -> bool:
 
 class Section(NamedTuple):
     method: str
-    formatter: Callable[[Any], Msg]
+    formatter: Callable[[Any, dict[str, Any]], Msg]
     id_fields: tuple[str, ...] = ()
     keep: Callable[[Any], bool] | None = None
     required: bool = False
@@ -195,9 +382,15 @@ SECTIONS: dict[str, Section] = {
 }
 
 
+# ------------------------------------------------------------------ logica
 def process_section(
-    name: str, items: list[Any], state: dict[str, list[str]], section: Section
-) -> None:
+    name: str,
+    items: list[Any],
+    state: dict[str, Any],
+    section: Section,
+    ctx: dict[str, Any],
+) -> list[tuple[str, str]]:
+    """Notifica gli elementi nuovi e restituisce quelli registrati (per lo storico)."""
     current: dict[str, Any] = {}
     for item in items:
         base = key = item_key(item, section.id_fields)
@@ -210,22 +403,28 @@ def process_section(
     if name not in state:
         state[name] = sorted(current)
         log.info("[%s] primo avvio: %d elementi salvati, nessuna notifica", name, len(current))
-        return
+        return []
 
     seen = set(state[name])
-    new = [(k, i) for k, i in current.items() if k not in seen]
-    log.info("[%s] %d elementi, %d nuovi", name, len(current), len(new))
+    nuovi = [(k, i) for k, i in current.items() if k not in seen]
+    log.info("[%s] %d elementi, %d nuovi", name, len(current), len(nuovi))
 
-    if len(new) > MAX_NOTIFICHE:
-        if notify(f"{len(new)} novità su DidUP ({name})", "Apri il registro per i dettagli.", ["warning"]):
-            seen.update(k for k, _ in new)
+    registrati: list[tuple[str, str]] = []
+    if len(nuovi) > MAX_NOTIFICHE:
+        titolo = f"{len(nuovi)} novità su DidUP ({name})"
+        messaggio = "Apri il registro per i dettagli."
+        if notify(titolo, messaggio, ["warning"], PRIORITA_ALTA):
+            seen.update(k for k, _ in nuovi)
+            registrati.append((titolo, messaggio))
     else:
-        for key, item in new:
-            title, message, tags = section.formatter(item)
-            if notify(title, message, tags):
-                seen.add(key)
+        for key, item in nuovi:
+            titolo, messaggio, tags, priorita = section.formatter(item, ctx)
+            if notify(titolo, messaggio, tags, priorita):
+                seen.add(key)  # se ntfy fallisce, ritenta alla prossima esecuzione
+                registrati.append((titolo, messaggio))
 
     state[name] = sorted(seen)
+    return registrati
 
 
 def is_auth_error(exc: BaseException) -> bool:
@@ -302,7 +501,20 @@ def main() -> int:
         return 0
 
     state = load_state()
+
+    # --- statistiche e trend (calcolati PRIMA di notificare, cosi' la media
+    #     aggiornata finisce dentro la notifica del nuovo voto) --------------
+    voti = data.get("voti") or []
+    stats = compute_stats(voti)
+    trend = build_trend_line(stats, state.get("_stats") or {})
+    ctx: dict[str, Any] = {"trend": trend}
+    if trend:
+        log.info("%s", trend)
+
+    ensure_history()
+
     ok = True
+    eventi: list[tuple[str, str]] = []
     for name, section in SECTIONS.items():
         items = data.get(name)
         if items is None:
@@ -311,7 +523,19 @@ def main() -> int:
             else:
                 print(f"::warning::Sezione '{name}' non disponibile, la salto")
             continue
-        process_section(name, items, state, section)
+        prodotti = process_section(name, items, state, section, ctx)
+        eventi.extend(prodotti)
+        if name == "voti" and prodotti and trend:
+            eventi.append(("Media aggiornata", trend))
+
+    if stats:
+        state["_stats"] = stats
+
+    if eventi:
+        append_history(eventi)
+
+    if voti:
+        render_chart(voti)
 
     save_state(state)
     return 0 if ok else 1
