@@ -1,8 +1,8 @@
 name: Check DidUP
 
 
-'on':
-workflow_dispatch: {}
+on:
+workflow_dispatch:
 
 
 permissions:
@@ -32,7 +32,7 @@ steps:
   - name: Installa dipendenze
     run: python -m pip install "didupwrapper>=0.1.1,<0.2" requests
 
-  - name: Inizializza file
+  - name: Inizializza file di stato
     run: |
       [ -f state.json ] || echo '{}' > state.json
       [ -f history.md ] || printf '# Storico DidUP\n\nEventi registrati automaticamente dal monitor.\n' > history.md
@@ -45,15 +45,19 @@ steps:
       NTFY_TOPIC: ${{ secrets.NTFY_TOPIC || 'Morselli_alerts_didup' }}
     run: python monitor.py
 
-  - name: Salva stato nel repository
+  - name: Salva JSON e storico nel repository
     if: always()
     run: |
       git config user.name "github-actions[bot]"
       git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
       git add state.json history.md
+
       if ! git diff --cached --quiet; then
         git commit -m "Aggiorna stato monitor DidUP"
-        git push
+        git push origin "HEAD:${GITHUB_REF_NAME}"
+      else
+        echo "Nessuna modifica da salvare."
       fi
 
 
