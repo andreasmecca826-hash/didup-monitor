@@ -27,7 +27,7 @@ import os
 import re
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable, NamedTuple
 
@@ -157,6 +157,20 @@ def voto_tipo(voto: Any) -> str:
     return "altro"
 
 
+def compito_recente(data: str) -> bool:
+    if not data:
+        return True
+    testo = data.strip()
+    try:
+        if "-" in testo:
+            giorno = datetime.strptime(testo[:10], "%Y-%m-%d").date()
+        else:
+            giorno = datetime.strptime(testo[:10], "%d/%m/%Y").date()
+    except ValueError:
+        return True
+    return giorno >= datetime.now(timezone.utc).date() - timedelta(days=1)
+
+
 def build_voto_data(data: dict[str, list[Any] | None], stats: dict[str, Any]) -> dict[str, Any]:
     """Converte i record DidUP completi nel formato letto dall'app VOTO."""
     grouped: dict[str, dict[str, Any]] = {}
@@ -182,11 +196,14 @@ def build_voto_data(data: dict[str, list[Any] | None], stats: dict[str, Any]) ->
         title = first_attr(compito, COMPITI_FIELDS)
         if not title:
             continue
+        due_date = first_attr(compito, ("dat_compiti", "dat_consegna", "dat_giorno", "data"))
+        if not compito_recente(due_date):
+            continue
         assignments.append({
             "id": item_key(compito, ("prg", "id")) or f"compito-{index}",
             "title": title,
             "subject": first_attr(compito, ("des_materia", "materia")) or None,
-            "dueDate": first_attr(compito, ("dat_compiti", "dat_consegna", "dat_giorno", "data")) or None,
+            "dueDate": due_date or None,
             "completed": False,
         })
 
