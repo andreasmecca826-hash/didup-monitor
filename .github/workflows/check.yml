@@ -1,8 +1,8 @@
 name: Check DidUP
 
 
-on:
-workflow_dispatch:
+'on':
+workflow_dispatch: {}
 
 
 permissions:
@@ -13,11 +13,10 @@ jobs:
 check:
 runs-on: ubuntu-latest
 timeout-minutes: 5
-
-
 steps:
-  - name: Checkout
-    uses: actions/checkout@v6
+- name: Checkout
+uses: actions/checkout@v6
+
 
   - name: Setup Python
     uses: actions/setup-python@v6
@@ -37,7 +36,7 @@ steps:
       DIDUP_SCHOOL: ${{ secrets.CODICE_SCUOLA }}
       DIDUP_USER: ${{ secrets.USERNAME }}
       DIDUP_PASSWORD: ${{ secrets.PASSWORD }}
-      NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+      NTFY_TOPIC: ${{ secrets.NTFY_TOPIC || 'Morselli_alerts_didup' }}
     run: python monitor.py
 
   - name: Salva stato nel repository
