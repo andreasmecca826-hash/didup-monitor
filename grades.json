@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T19:52:35.009861+00:00",
+  "updatedAt": "2026-10-25T20:03:15.379300+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -17,5 +17,590 @@
     }
   ],
   "assignments": [],
-  "notifications": []
+  "notifications": [
+    {
+      "id": "h:91e1f67c75ed62af",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Incontri di sensibilizzazione per la Giornata internazionale per l'eliminazione della violenza contro le donne – Calendario e organizzazione delle attivita?. TRIENNIO",
+      "date": "2026-10-24 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:e0e7929eee066b34",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n.94 - Orario provvisorio delle lezioni da giorno 26 ottobre 2026",
+      "date": "2026-10-23 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:3a7d306db8bd3063",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "In attuazione  dell'ordinanza sindacale n. 60 del 23.10.2026  sono sospese in data odierna  le attività didattiche pomeridiane.  Si allega ordinanza Sindacale",
+      "date": "2026-10-23 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:1fbd41de5e52f9f7",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n. 92 Uscita didattica Visione del film Carlo Acutis. Il giovane Santo",
+      "date": "2026-10-23 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:e79e74060a1a7d34",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Si comunica che per motivi organizzativi la classe 1F ITT domani 23.10.2026  uscirà alle ore 13:00",
+      "date": "2026-10-22 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:6e9e0c2a5a7525e6",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Partecipazione al Convegno FIDAPA \"Le potenzialità delle Donne nel Terzo Millennio: Imprenditoria, Tecnologia e Comunicazione\" Ipseoa Morselli.Sturzo",
+      "date": "2026-10-22 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:5d41887d4f266666",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Si comunica che motivi organizzativi domani 23 ottobre c.a. la classe 2D ITT esce alle ore 13:00",
+      "date": "2026-10-22 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:4c5a38f9c3f8e9cf",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n.88 - Orario provvisorio delle lezioni da giorno 19 ottobre 2026 – serale",
+      "date": "2026-10-16 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:46129cf8f611cca5",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Uscita didattica presso Ragusa IBLA e struttura ricettiva Mangia’s Costa Ragusa (Scoglitti) – 20 Ottobre 2026 Ipseoa Morselli-Sturzo",
+      "date": "2026-10-16 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:915a8e71f8e92840",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n.86 - Orario provvisorio delle lezioni da giorno 19 ottobre 2026",
+      "date": "2026-10-16 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:3466eb45d422e322",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Visione del film “Carlo Acutis. Il giovane santo.” Presso il cinema Cinema Hollywood Gela",
+      "date": "2026-10-16 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:68b19697905ef9d3",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "integrazione alla circ. n. 74 uscita didattica visione del film Il mio nome è Carlo.",
+      "date": "2026-10-16 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:2087d54c3e844257",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Spostamento classi (3F+3M), (5C+5G) plesso Morselli",
+      "date": "2026-10-16 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:ed69cccd2db09690",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "In riferimento alla visione del film di giorno 19.10.2026 si comunica l'elenco definitivo delle classi partecipanti e dei docenti accompagnatori istituto Morselli",
+      "date": "2026-10-15 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:aa290814704a413c",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "In riferimento  alla circ. n. 81  si comunica che nella classe 3M il docente accompagnatore è il prof. Baldone Salvatore  e non D'Aleo Concetta",
+      "date": "2026-10-15 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:a3fb3777e7a0efcb",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Visione film 19.10.2026 Istituto Morselli",
+      "date": "2026-10-15 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:11b9d8c005253ff9",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Gestione cancello sede di piano Notaro",
+      "date": "2026-10-15 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:06dcfe0190418d39",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Utilizzo piazzale interno del plesso morselli.",
+      "date": "2026-10-15 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:d02f991ef4e84a88",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Versamento contributo volontario e  quota assicurativa a.s.2026/2027 Morselli -Sturzo",
+      "date": "2026-10-14 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:25e36b65365e12e1",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Sciopero 16 ottobre",
+      "date": "2026-10-14 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:e113c91190f8c730",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n. 75 - Partecipazione agli Stati Generali della Scuola Siciliana – Palermo 14 ottobre 2026",
+      "date": "2026-10-13 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:fe7d160ded3bcf38",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Uscita didattica presso il cinema Hollywood di Gela per la visione del film \"Il mio nome è Carlo\".- STURZO",
+      "date": "2026-10-13 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:91f5a716ccc62820",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Invito per le classi ai fini FSL – Convegno “Gela e il mare: un rapporto millenario” – 16 Ottobre 2026.",
+      "date": "2026-10-13 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:e8447754f51023f4",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n.72 - Orario provvisorio delle lezioni da giorno 12 ottobre 2026 – aggiornamento",
+      "date": "2026-10-12 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:26a19867bc5211ca",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n.71 - Orario provvisorio delle lezioni da giorno 12 ottobre 2026",
+      "date": "2026-10-10 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:8edb883965fba62b",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Plesso Morselli si comunica che in riferimento alla circ. n. 65 la classe 5A uscirà alle ore 12:00.",
+      "date": "2026-10-08 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:4d162fbc3774200d",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n.65 - Organizzazione attività didattica assemblea sindacale ANIEF – Plesso Morselli – errata corrige",
+      "date": "2026-10-07 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:6fe45b302fcdb26a",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "In riferimento alla circ. n.62 si precisa che le classi 4ASia e 1AAfm ITE   usciranno alle ore 12:00 e non alla ore 11:00",
+      "date": "2026-10-07 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:30da05fd8cade577",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Convocazione C.D.C  OTTOBRE Morselli-Sturzo Diurno",
+      "date": "2026-10-07 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:bb8b34fe7dfebac1",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Assemblea ANIEF plesso Morselli",
+      "date": "2026-10-07 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:edd1496e2945285d",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Organizzazione attività didattica Sturzo assemblea sindacale Anief",
+      "date": "2026-10-07 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:0ea2eb4d5bdadcb3",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "liberatoria uscite anticipate per motivi organizzaztivi",
+      "date": "2026-10-07 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:e12afe9df1b75021",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n.60 - Orario provvisorio delle lezioni da giorno 5 ottobre 2026 – precisazione in merito alle ore dei docenti tecnico-pratici",
+      "date": "2026-10-06 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:8f456ba4a87dcc88",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Partecipazione degli studenti dei corsi serali ( classi terze e quinte) all’incontro informativo e formativo “Prevenzione e Sicurezza nel lavoro di cura” – 9 ottobre 2026",
+      "date": "2026-10-06 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:24813bb9fcb1a2b4",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "sospensione energia elettrica  uscita anticipata PLESSO MORSELLI",
+      "date": "2026-10-06 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:5390ec10e02efb6b",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n.57 - Orario provvisorio delle lezioni da giorno 5 ottobre 2026 – aggiornamento",
+      "date": "2026-10-05 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:b17b6120bf0770ae",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "In riferimento alla circolare n. 55 si allega il modulo per la presentazione delle liste",
+      "date": "2026-10-05 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:31418cf20bdfb28d",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Elezioni alunni e genitori componenti consigli di classe e alunni componente consiglio di istituto",
+      "date": "2026-10-05 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:2830002c6df6f53d",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "sospensione attività didattica per per interruzione erogazione energia elettrica in data 05/10/2026 PLESSO MORSELLI",
+      "date": "2026-10-05 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:c5159a213bc18b93",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Indicazioni gestione cancello plesso di via Liszt",
+      "date": "2026-10-03 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:6a8a3b34d74bd2fb",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Ad integrazione e parziale modifica della  Cir. n. 51 del 02/10/2026 , si comunica che  la classe 5ªAE  uscirà alle ore 11:30 e la   classe 1ªA AFM  uscirà alle ore 12:30.",
+      "date": "2026-10-03 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:d439acd81f862de7",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n.52 - Orario provvisorio delle lezioni da giorno 5 ottobre 2026",
+      "date": "2026-10-02 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:401794c21db36d97",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "organizzazione didattica assemblea sindacale FLC-CGIL-Sturzo",
+      "date": "2026-10-02 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:168d9419e5c6e620",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Si precisa che la circolare n° 50 riguarda solo il plesso Morselli dove è in corso l'interruzione di energia elettrica.",
+      "date": "2026-10-02 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:a5ca005ffc92035d",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Uscita anticipata ore 11:00 per mancanza energia elettrica",
+      "date": "2026-10-02 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:034ce6d9c4696699",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Variazioni aule",
+      "date": "2026-10-02 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:e96b0f528e9f0a86",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Uscita didattica orientamento a Catania",
+      "date": "2026-10-01 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:cc24be718da20d4a",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Invito partecipazione classi circuito a eventi di carattere trattamentale – Ottobre 2026\nSi",
+      "date": "2026-09-30 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:bbcc0435c9560e4f",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Cambio aula 1AFM-5E",
+      "date": "2026-09-29 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:3d931e9fced63686",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "In riferimento alla circolare n. 41, si comunica che, per mero errore materiale, alla stessa era stato allegato un file non corretto. Si procede pertanto alla pubblicazione dell’allegato corretto, che sostituisce integralmente quello precedentemente pubblicato.",
+      "date": "2026-09-28 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:c1c4375b6258e627",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n.41 - Orario provvisorio delle lezioni da giorno 28 settembre 2026 - adattamento",
+      "date": "2026-09-28 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:2659073af517850c",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Orari della ricreazione – A decorrere dal 28 settembre c.a.",
+      "date": "2026-09-28 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:b506d834407877ba",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "ORARIO PROVVISORIO DOCENTI SOSTEGNO E SEDE CARCERARIA",
+      "date": "2026-09-26 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:3e04018754bd9f9c",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n.38 - Orario provvisorio delle lezioni da giorno 28 settembre 2026",
+      "date": "2026-09-25 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:e5b4c39f3d4184ef",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n.37 - Orario provvisorio delle lezioni da giorno 23 settembre 2026",
+      "date": "2026-09-22 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:c31e987b8d2f0858",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Sospensione temporanea dell'utilizzo della palestra del plesso \"Morselli\" – locali non fruibili fino a nuova disposizione-Plesso Morselli",
+      "date": "2026-09-22 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:7acf7a2d57e5d562",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n.33 - Orario provvisorio delle lezioni di giorno 22 settembre 2026",
+      "date": "2026-09-21 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:d3b9142f4bad392b",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "In riferimento alle circolari n.31 e n.32, si comunica che, per mero errore materiale, sono stati pubblicati due file non corretti relativi agli orari dei docenti che prestano servizio nel plesso di via Pitagora nelle ore antimeridiane.\nSi provvede pertanto alla ripubblicazione dei file corretti, che sostituiscono integralmente quelli precedentemente pubblicati.",
+      "date": "2026-09-19 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:3682c5f6e5fb66a3",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n.32 - Orario provvisorio delle lezioni di giorno 21 settembre 2026 – integrazione e parziale rettifica",
+      "date": "2026-09-19 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:591e3ccfd50086c5",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n.31 - Orario provvisorio delle lezioni di giorno 21 settembre 2026",
+      "date": "2026-09-19 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:d72b7ec0e274f59b",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n.30 - Orario provvisorio delle lezioni di giorno 18 settembre 2026 – errata corrige",
+      "date": "2026-09-17 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:3437d97c023b2779",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n.29 - Orario provvisorio delle lezioni di giorno 18 settembre 2026",
+      "date": "2026-09-17 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:97c1749768aacaba",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n.28 - Orario provvisorio delle lezioni di giorno 17 settembre 2026",
+      "date": "2026-09-16 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:cabaa1a536d562c5",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n.26 - Orario provvisorio delle lezioni di giorno 16 settembre 2026",
+      "date": "2026-09-15 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:a6d265540f4c0211",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Organizzazione delle attività per il giorno 15 settembre 2026 – Accoglienza Classi Prime e orario di ingresso delle altre classi Morselli - Sturzo ITE ed IPSEOA",
+      "date": "2026-09-14 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:49608478be0fcacf",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Organizzazione delle attività per il giorno 15 settembre 2026 – Accoglienza Classi Prime e orario di ingresso delle altre classi Morselli e Sturzo ITE-",
+      "date": "2026-09-14 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:d4dff6826c743624",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Determina presidenziale n. 97 del 10/09/2026\nUtilizzo locali presso Morselli",
+      "date": "2026-09-14 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:d638e51f56462248",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n.21 - Orario provvisorio delle lezioni di giorno 15 settembre 2026",
+      "date": "2026-09-14 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:a8aa5c52b12529bd",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare 19 DECRETO ASSEGNAZIONE DEI DOCENTI ALLE CLASSI A.S. 2026/27 DEI CORSI SERALI",
+      "date": "2026-09-14 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:68517a56ea2ec59b",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare 15 DECRETO ASSEGNAZIONE DEI DOCENTI ALLE CLASSI A.S. 2026/27.",
+      "date": "2026-09-12 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:8aa7c2a3163afebf",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "In riferimento alla circ. n.4 si integra il seguente punto all'o.d.g. : \" Proposte di attività integrative ed extracurricolari ( uscite didattiche e viaggi di istruzione)",
+      "date": "2026-09-03 00:00:00",
+      "read": false
+    },
+    {
+      "id": "h:577312944ff596ef",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Piano delle attività del personale docente fino al 15 settembre 2026",
+      "date": "2026-09-02 00:00:00",
+      "read": false
+    }
+  ],
+  "attendance": {
+    "absenceDays": 14,
+    "absenceHours": 84,
+    "delays": 1,
+    "earlyExits": 0,
+    "annualHours": 990,
+    "absenceLimitHours": 247.5
+  }
 }
