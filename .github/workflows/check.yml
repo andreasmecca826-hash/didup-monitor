@@ -51,12 +51,6 @@ jobs:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC || 'Morselli_alerts_didup' }}
         run: python monitor.py
 
-      - name: Prepara il file grades.json per l'app
-        run: |
-          if [ -f state.json ]; then
-            cp state.json grades.json
-          fi
-
       - name: Salva JSON e storico nel repository
         if: always()
         env:
@@ -73,4 +67,3 @@ jobs:
           else
             echo "Nessuna modifica da salvare."
           fi
-

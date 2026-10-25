@@ -142,6 +142,63 @@ def compute_stats(voti: list[Any]) -> dict[str, Any]:
     }
 
 
+def voto_tipo(voto: Any) -> str:
+    codice = first_attr(voto, ("cod_voto_pratico", "tipo_valutazione", "cod_tipo")).lower()
+    if codice.startswith("s") or "scrit" in codice:
+        return "scritto"
+    if codice.startswith("n") or "oral" in codice:
+        return "orale"
+    if "prat" in codice or "lab" in codice:
+        return "pratico"
+    return "altro"
+
+
+def build_voto_data(data: dict[str, list[Any] | None], stats: dict[str, Any]) -> dict[str, Any]:
+    """Converte i record DidUP completi nel formato letto dall'app VOTO."""
+    grouped: dict[str, dict[str, Any]] = {}
+    for index, voto in enumerate(data.get("voti") or []):
+        materia = first_attr(voto, ("des_materia",), "Materia")
+        subject_id = slug(materia) or f"materia-{index}"
+        subject = grouped.setdefault(subject_id, {"id": subject_id, "name": materia, "grades": []})
+        raw_value = first_attr(voto, ("cod_codice", "dec_valore", "valore", "voto"), "")
+        value = voto_valore(voto)
+        if value is None:
+            continue
+        subject["grades"].append({
+            "id": first_attr(voto, ("prg_voto",)) or item_key(voto, ("prg_voto",)),
+            "value": raw_value or value,
+            "date": first_attr(voto, ("dat_evento", "dat_giorno")),
+            "type": voto_tipo(voto),
+            "weight": 1,
+            "comment": first_attr(voto, ("des_commento", "descrizione_prova", "descrizione_voto")) or None,
+        })
+
+    assignments = []
+    for index, compito in enumerate(data.get("compiti") or []):
+        title = first_attr(compito, COMPITI_FIELDS)
+        if not title:
+            continue
+        assignments.append({
+            "id": item_key(compito, ("prg", "id")) or f"compito-{index}",
+            "title": title,
+            "subject": first_attr(compito, ("des_materia", "materia")) or None,
+            "dueDate": first_attr(compito, ("dat_compiti", "dat_consegna", "dat_giorno", "data")) or None,
+            "completed": False,
+        })
+
+    return {
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+        "subjects": list(grouped.values()),
+        "assignments": assignments,
+        "notifications": [],
+    }
+
+
+def save_voto_data(data: dict[str, list[Any] | None], stats: dict[str, Any]) -> None:
+    output = Path(os.environ.get("VOTO_FILE") or "grades.json")
+    output.write_text(json.dumps(build_voto_data(data, stats), indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
 def build_trend_line(stats: dict[str, Any], precedente: dict[str, Any]) -> str:
     """Riga tipo 'Media generale: 7.42 ⬆️ (+0.15)' da mettere nelle notifiche."""
     if not stats:
@@ -466,6 +523,7 @@ def main() -> int:
     if eventi:
         append_history(eventi)
 
+    save_voto_data(data, stats)
     save_state(state)
     return 0 if ok else 1
 
