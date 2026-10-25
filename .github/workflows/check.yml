@@ -56,7 +56,7 @@ jobs:
         with:
           name: didup-state
           path: state.json
-          retention-days: 3
+          retention-days: 30
 
           overwrite: true
 
