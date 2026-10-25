@@ -236,6 +236,7 @@ def build_voto_data(data: dict[str, list[Any] | None], stats: dict[str, Any]) ->
                 "title": title,
                 "message": message or None,
                 "date": event_date or None,
+                "subject": first_attr(item, ("categoria", "category", "des_categoria")) or None,
                 "read": False,
                 "attachmentUrl": attachment_url or None,
                 "attachmentName": attachment_name or None,
