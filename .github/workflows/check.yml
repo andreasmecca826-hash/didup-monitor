@@ -14,7 +14,7 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
       - name: Checkout
@@ -26,9 +26,9 @@ jobs:
           python-version: "3.12"
 
       - name: Installa dipendenze
-        run: pip install "didupwrapper>=0.1.1,<0.2" requests
+        run: pip install "didupwrapper>=0.1.1,<0.2" requests "matplotlib>=3.8,<4"
 
-      - name: Scarica stato precedente
+      - name: Scarica stato, storico e grafico precedenti
         uses: dawidd6/action-download-artifact@v3
         with:
           name: didup-state
@@ -51,11 +51,14 @@ jobs:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC || 'Morselli_alerts_didup' }}
         run: python monitor.py
 
-      - name: Salva stato
+      - name: Salva stato, storico e grafico
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: didup-state
-          path: state.json
+          path: |
+            state.json
+            history.md
+            voti_trend.png
           retention-days: 30
           overwrite: true
