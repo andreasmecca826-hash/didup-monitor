@@ -217,6 +217,13 @@ def build_voto_data(data: dict[str, list[Any] | None], stats: dict[str, Any]) ->
             title = first_attr(item, ("des_oggetto", "oggetto", "titolo", "des_titolo"), title_default)
             message = first_attr(item, ("des_messaggio", "messaggio", "testo", "des_testo", "nota", "descrizione"))
             event_date = first_attr(item, ("dat_giorno", "dat_evento", "data"))
+            attachment_url = first_attr(item, ("url", "des_url"))
+            attachment_name = first_attr(item, ("nome_file", "file_name"))
+            allegati = getattr(item, "lista_allegati", None) or []
+            if allegati:
+                allegato = allegati[0]
+                attachment_url = attachment_url or first_attr(allegato, ("url", "path"))
+                attachment_name = attachment_name or first_attr(allegato, ("nome_file", "descrizione_file"))
             notifications.append({
                 "id": item_key(item, ("prg_messaggio", "prg_bacheca", "prg", "id")) or f"{kind}-{index}",
                 "type": "note" if kind == "note" else "notice",
@@ -224,6 +231,8 @@ def build_voto_data(data: dict[str, list[Any] | None], stats: dict[str, Any]) ->
                 "message": message or None,
                 "date": event_date or None,
                 "read": False,
+                "attachmentUrl": attachment_url or None,
+                "attachmentName": attachment_name or None,
             })
 
     return {
