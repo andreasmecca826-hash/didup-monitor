@@ -395,6 +395,15 @@ def fmt_compiti(r: Any, _ctx: dict[str, Any]) -> Msg:
     return "Nuovi compiti", "\n".join(righe), ["pencil2"], PRIORITA_SILENZIOSA
 
 
+def fmt_assenza(evento: Any, _ctx: dict[str, Any]) -> Msg:
+    codice = first_attr(evento, ("cod_evento",)).upper()
+    titolo = {"A": "Assenza", "I": "Ritardo", "U": "Uscita"}.get(codice, "Evento presenze")
+    data = first_attr(evento, ("dat_evento", "data"))
+    descrizione = first_attr(evento, ("descrizione", "nota"))
+    righe = [x for x in (data, descrizione) if x]
+    return titolo, "\n".join(righe) or "Evento registrato su DidUP", ["calendar"], PRIORITA_SILENZIOSA
+
+
 def has_compiti(r: Any) -> bool:
     return bool(first_attr(r, COMPITI_FIELDS).strip())
 
@@ -409,7 +418,7 @@ class Section(NamedTuple):
 
 SECTIONS: dict[str, Section] = {
     "voti": Section("get_voti", fmt_voto, required=True),
-    "assenze": Section("get_assenze"),
+    "assenze": Section("get_assenze", fmt_assenza, id_fields=("dat_evento", "data", "cod_evento", "descrizione")),
     "bacheca": Section(
         "get_bacheca", fmt_bacheca,
         id_fields=("prg_messaggio", "prg_bacheca", "prg", "id"), required=True,
