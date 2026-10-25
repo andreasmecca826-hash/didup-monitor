@@ -222,7 +222,13 @@ def build_voto_data(data: dict[str, list[Any] | None], stats: dict[str, Any]) ->
             allegati = getattr(item, "lista_allegati", None) or []
             if allegati:
                 allegato = allegati[0]
-                attachment_url = attachment_url or first_attr(allegato, ("url", "path"))
+                allegato_url = first_attr(allegato, ("url",))
+                allegato_path = first_attr(allegato, ("path",))
+                if allegato_path and not allegato_path.startswith("http"):
+                    base = allegato_url or attachment_url
+                    attachment_url = f"{base.rstrip('/')}/{allegato_path.lstrip('/')}" if base else allegato_path
+                else:
+                    attachment_url = allegato_path or allegato_url or attachment_url
                 attachment_name = attachment_name or first_attr(allegato, ("nome_file", "descrizione_file"))
             notifications.append({
                 "id": item_key(item, ("prg_messaggio", "prg_bacheca", "prg", "id")) or f"{kind}-{index}",
