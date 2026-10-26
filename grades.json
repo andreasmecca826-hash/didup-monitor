@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-26T09:07:36.385051+00:00",
+  "updatedAt": "2026-10-26T09:22:35.705869+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -61,6 +61,17 @@
     }
   ],
   "notifications": [
+    {
+      "id": "h:bf5c2147601d9366",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Assemblea d'Istituto martedì 27.10.2026",
+      "date": "2026-10-26 00:00:00",
+      "subject": "CIRCOLARI",
+      "read": false,
+      "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/50e89cd6-1ce7-497b-a6ef-233c9109c74f",
+      "attachmentName": "_timbro_circ. assem ottobre.pdf"
+    },
     {
       "id": "h:91e1f67c75ed62af",
       "type": "notice",

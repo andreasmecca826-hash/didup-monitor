@@ -25,3 +25,7 @@ Eventi registrati automaticamente dal monitor.
 ## 2026-10-26 08:52 UTC
 
 - **Nuovi compiti** — DIRITTO ED ECOMOMIA — Data: 2026-10-26 — []
+
+## 2026-10-26 09:22 UTC
+
+- **Bacheca DidUP** — Nuova comunicazione — Data: 2026-10-26 — Assemblea d'Istituto martedì 27.10.2026
