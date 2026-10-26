@@ -221,6 +221,20 @@ def build_voto_data(data: dict[str, list[Any] | None], stats: dict[str, Any]) ->
             "completed": False,
         })
 
+    diary = []
+    for index, lezione in enumerate(data.get("diario") or []):
+        activity = first_attr(lezione, ("attivita", "attività", "des_attivita", "descrizione"))
+        if not activity:
+            continue
+        diary.append({
+            "id": item_key(lezione, ("pk_lezione", "pk_materia", "dat_evento", "dat_giorno", "ora", "attivita")) or f"diario-{index}",
+            "date": first_attr(lezione, ("dat_giorno", "dat_evento", "data")) or None,
+            "subject": first_attr(lezione, ("des_materia", "materia")) or None,
+            "teacher": first_attr(lezione, ("docente", "des_docente")) or None,
+            "hour": first_attr(lezione, ("ora", "ora_lezione")) or None,
+            "activity": activity,
+        })
+
     eventi = data.get("assenze") or []
     assenze = sum(first_attr(evento, ("cod_evento",)).upper() == "A" for evento in eventi)
     ritardi = sum(first_attr(evento, ("cod_evento",)).upper() == "I" for evento in eventi)
@@ -260,6 +274,7 @@ def build_voto_data(data: dict[str, list[Any] | None], stats: dict[str, Any]) ->
         "updatedAt": datetime.now(timezone.utc).isoformat(),
         "subjects": list(grouped.values()),
         "assignments": assignments,
+        "diary": diary,
         "notifications": notifications,
         "attendance": {
             "absenceDays": assenze,
@@ -544,6 +559,10 @@ def fetch_all_once(
             try:
                 items = list(getattr(didup, section.method)())
                 if name == "compiti":
+                    # Il registro contiene sia l'attivita' svolta sia i compiti.
+                    # L'attivita' viene archiviata separatamente e non passa mai
+                    # da process_section, quindi non genera notifiche.
+                    out["diario"] = items
                     items = flatten_registro_compiti(items)
                 if apply_filters and section.keep:
                     items = [i for i in items if section.keep(i)]
