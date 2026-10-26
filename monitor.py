@@ -165,6 +165,18 @@ def login_browser(page: Any) -> None:
         raise RuntimeError("Login web DidUP non completato")
 
 
+def open_bacheca(page: Any) -> None:
+    """Raggiunge la Bacheca tramite la navigazione web autenticata."""
+    labels = page.get_by_text("Bacheca", exact=False)
+    for index in range(min(labels.count(), 10)):
+        label = labels.nth(index)
+        if label.is_visible():
+            label.click(timeout=5000)
+            page.wait_for_timeout(1500)
+            return
+    raise RuntimeError("Sezione Bacheca non trovata nel portale web")
+
+
 class BrowserHTTPError(RuntimeError):
     def __init__(self, status: int):
         super().__init__(f"HTTP {status}")
@@ -227,6 +239,7 @@ def download_circulars(didup: Any, items: list[Any]) -> dict[str, dict[str, str]
         page = context.new_page()
         try:
             login_browser(page)
+            open_bacheca(page)
             for item, allegati in candidates:
                 for allegato in allegati:
                     allegato_url = first_attr(allegato, ("url",))
@@ -247,6 +260,9 @@ def download_circulars(didup: Any, items: list[Any]) -> dict[str, dict[str, str]
                         status = getattr(exc, "status", None)
                         if status is not None:
                             log.error("Download browser circolare fallito (HTTP %s)", status)
+                            if status == 403:
+                                log.error("Test Bacheca interrotto al primo HTTP 403")
+                                return downloaded
                         else:
                             log.error("Download browser circolare fallito (%s)", type(exc).__name__)
                     break
