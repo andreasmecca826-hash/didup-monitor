@@ -31,6 +31,12 @@ if not service_key:
     print("service_role_key_present=false")
     raise SystemExit(2)
 print("service_role_key_present=true")
+if service_key.startswith("sb_secret_"):
+    print("service_role_key_format=new_secret")
+elif service_key.count(".") == 2:
+    print("service_role_key_format=legacy_jwt")
+else:
+    print("service_role_key_format=unrecognized")
 
 auth_headers = {"apikey": service_key}
 if service_key.count(".") == 2 and not service_key.startswith(("sb_secret_", "sb_publishable_")):
@@ -48,6 +54,21 @@ except requests.RequestException as exc:
 
 print("storage_api_reachable=true", "http_status=" + str(response.status_code))
 if response.status_code != 200:
+    try:
+        error_text = response.text.lower()
+    except Exception:
+        error_text = ""
+    if "jwt" in error_text or "token" in error_text or "authorization" in error_text:
+        category = "auth_token_rejected"
+    elif "api key" in error_text or "apikey" in error_text:
+        category = "api_key_rejected"
+    elif "bucket" in error_text:
+        category = "bucket_request_error"
+    elif response.status_code == 400:
+        category = "bad_request"
+    else:
+        category = "storage_http_error"
+    print("storage_error_category=" + category)
     raise SystemExit(4)
 
 try:
