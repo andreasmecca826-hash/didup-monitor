@@ -58,8 +58,9 @@ SUFFICIENZA = 6.0
 # Campi che cambiano nel tempo senza che l'elemento sia "nuovo" (es. presa visione):
 NOISY_HINTS = ("visione", "letto", "letta", "conferma", "read")
 
-# Possibili nomi del campo "compiti" nelle lezioni del registro
-COMPITI_FIELDS = ("des_compiti", "compiti", "des_compito", "compito")
+# Possibili nomi del testo del compito dopo l'estrazione dal registro.
+# ``compiti`` nelle lezioni del registro e' una lista annidata, non il testo.
+COMPITI_FIELDS = ("compito", "des_compito", "des_compiti")
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 log = logging.getLogger("monitor")
@@ -84,6 +85,19 @@ def first_attr(item: Any, names: tuple[str, ...], default: str = "") -> str:
         if valore not in (None, ""):
             return str(valore)
     return default
+
+
+def compito_text(item: Any) -> str:
+    """Restituisce solo il testo del compito, mai una lista del diario."""
+    data = as_dict(item)
+    for name in COMPITI_FIELDS:
+        value = data.get(name)
+        if value in (None, "") or isinstance(value, (list, dict)):
+            continue
+        text = str(value).strip()
+        if text and text not in ("[]", "{}"):
+            return text
+    return ""
 
 
 def slug(value: str) -> str:
@@ -193,10 +207,10 @@ def build_voto_data(data: dict[str, list[Any] | None], stats: dict[str, Any]) ->
 
     assignments = []
     for index, compito in enumerate(data.get("compiti") or []):
-        title = first_attr(compito, COMPITI_FIELDS)
+        title = compito_text(compito)
         if not title:
             continue
-        due_date = first_attr(compito, ("dat_compiti", "dat_consegna", "dat_giorno", "data"))
+        due_date = first_attr(compito, ("data_consegna", "dat_compiti", "dat_consegna", "dat_giorno", "data"))
         if not compito_recente(due_date):
             continue
         assignments.append({
@@ -401,8 +415,8 @@ def fmt_promemoria(p: Any, _ctx: dict[str, Any]) -> Msg:
 
 def fmt_compiti(r: Any, _ctx: dict[str, Any]) -> Msg:
     materia = first_attr(r, ("des_materia", "materia"), "Materia")
-    testo = first_attr(r, COMPITI_FIELDS)
-    data = first_attr(r, ("dat_compiti", "dat_consegna", "dat_giorno", "data"))
+    testo = compito_text(r)
+    data = first_attr(r, ("data_consegna", "dat_compiti", "dat_consegna", "dat_giorno", "data"))
     righe = [materia]
     if data:
         righe.append(f"Data: {data}")
@@ -421,7 +435,31 @@ def fmt_assenza(evento: Any, _ctx: dict[str, Any]) -> Msg:
 
 
 def has_compiti(r: Any) -> bool:
-    return bool(first_attr(r, COMPITI_FIELDS).strip())
+    return bool(compito_text(r))
+
+
+def flatten_registro_compiti(lezioni: list[Any]) -> list[dict[str, Any]]:
+    """Appiattisce RegistroLezione.compiti mantenendo materia e data della lezione."""
+    result: list[dict[str, Any]] = []
+    for lezione in lezioni:
+        lezione_data = as_dict(lezione)
+        materia = first_attr(lezione, ("des_materia", "materia"))
+        giorno = first_attr(lezione, ("dat_giorno", "dat_evento", "data"))
+        nested = lezione_data.get("compiti")
+        if not isinstance(nested, list):
+            continue
+        for compito in nested:
+            testo = compito_text(compito)
+            if not testo:
+                continue
+            item = dict(as_dict(compito))
+            item["compito"] = testo
+            if materia and not item.get("materia"):
+                item["materia"] = materia
+            if giorno and not item.get("dat_giorno"):
+                item["dat_giorno"] = giorno
+            result.append(item)
+    return result
 
 
 class Section(NamedTuple):
@@ -505,6 +543,8 @@ def fetch_all_once(
         for name, section in SECTIONS.items():
             try:
                 items = list(getattr(didup, section.method)())
+                if name == "compiti":
+                    items = flatten_registro_compiti(items)
                 if apply_filters and section.keep:
                     items = [i for i in items if section.keep(i)]
                 out[name] = items
