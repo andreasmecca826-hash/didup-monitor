@@ -41,3 +41,7 @@ Eventi registrati automaticamente dal monitor.
 ## 2026-10-26 21:52 UTC
 
 - **Bacheca DidUP** — Nuova comunicazione — Data: 2026-10-26 — Elezioni rappresentanti di classe corsi serali ITE e ITT Plesso Morselli
+
+## 2026-10-26 22:07 UTC
+
+- **Bacheca DidUP** — Nuova comunicazione — Data: 2026-10-26 — Elezioni rappresentanti alunni e assemblea di istituto corso serale Alberghiero

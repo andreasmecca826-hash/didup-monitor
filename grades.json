@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-26T21:52:37.267044+00:00",
+  "updatedAt": "2026-10-26T22:07:58.771302+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -844,6 +844,18 @@
     }
   ],
   "notifications": [
+    {
+      "id": "h:9150162825298e6a",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Elezioni rappresentanti alunni e assemblea di istituto corso serale Alberghiero",
+      "date": "2026-10-26 00:00:00",
+      "subject": "CIRCOLARI",
+      "read": false,
+      "attachmentPath": "circulars/bec8fee68e0d6684a7bcd3a9c34f9f5203b430d16c51d9ea068f1454f98fe3fc.pdf",
+      "attachmentUrl": null,
+      "attachmentName": "_timbro_elezioni serale Alberghiero.pdf"
+    },
     {
       "id": "h:a1c03d3b507db787",
       "type": "notice",
