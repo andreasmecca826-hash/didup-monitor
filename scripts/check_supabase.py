@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import os
+import json
 import re
 import sys
+from pathlib import Path
 from urllib.parse import urlsplit
 
 import requests
@@ -88,4 +90,39 @@ private = bucket.get("public") is False
 print("circular_bucket_private=" + str(private).lower())
 if not private:
     raise SystemExit(7)
+
+try:
+    grades = json.loads(Path("grades.json").read_text(encoding="utf-8"))
+except (OSError, json.JSONDecodeError):
+    print("internal_pdf_metadata=unavailable")
+    raise SystemExit(8)
+notifications = grades.get("notifications") if isinstance(grades, dict) else None
+paths = [
+    item.get("attachmentPath")
+    for item in notifications or []
+    if isinstance(item, dict)
+    and isinstance(item.get("attachmentPath"), str)
+    and re.fullmatch(r"circulars/[a-f0-9]{64}\.pdf", item["attachmentPath"])
+]
+print("internal_pdf_path_present=" + str(bool(paths)).lower())
+if not paths:
+    raise SystemExit(9)
+
+try:
+    with requests.get(
+        f"{candidate.rstrip('/')}/storage/v1/object/{bucket_name}/{paths[0]}",
+        headers=auth_headers,
+        timeout=20,
+        stream=True,
+    ) as pdf_response:
+        print("private_pdf_http_status=" + str(pdf_response.status_code))
+        if pdf_response.status_code != 200:
+            raise SystemExit(10)
+        signature_valid = pdf_response.raw.read(5) == b"%PDF-"
+        print("private_pdf_signature_valid=" + str(signature_valid).lower())
+        if not signature_valid:
+            raise SystemExit(11)
+except requests.RequestException as exc:
+    print("private_pdf_request_failed error_type=" + type(exc).__name__)
+    raise SystemExit(12)
 print("supabase_preflight=passed")
