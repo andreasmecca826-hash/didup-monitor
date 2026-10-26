@@ -13,6 +13,11 @@ on:
         required: false
         type: boolean
         default: false
+      repair_latest_circular_metadata:
+        description: "Associa al JSON l'ultimo PDF già caricato, senza aprire DidUP"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -38,7 +43,7 @@ jobs:
           python-version: "3.12"
 
       - name: Cache Chromium Playwright
-        if: ${{ inputs.open_latest_circular && !inputs.supabase_readonly_check }}
+        if: ${{ inputs.open_latest_circular && !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata }}
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
@@ -48,7 +53,7 @@ jobs:
         run: python -m pip install "didupwrapper>=0.1.1,<0.2" requests
 
       - name: Installa browser per il test singolo
-        if: ${{ inputs.open_latest_circular && !inputs.supabase_readonly_check }}
+        if: ${{ inputs.open_latest_circular && !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata }}
         run: |
           python -m pip install "playwright==1.64.1"
           python -m playwright install --only-shell chromium
@@ -61,8 +66,16 @@ jobs:
           SUPABASE_STORAGE_BUCKET: circulars
         run: python scripts/check_supabase.py
 
+      - name: Associa al JSON il PDF già caricato
+        if: ${{ inputs.repair_latest_circular_metadata && !inputs.supabase_readonly_check }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_STORAGE_BUCKET: circulars
+        run: python scripts/repair_latest_circular_path.py
+
       - name: Inizializza file di stato se mancanti
-        if: ${{ !inputs.supabase_readonly_check }}
+        if: ${{ !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata }}
         run: |
           if [ ! -f state.json ]; then
             echo '{}' > state.json
@@ -77,7 +90,7 @@ jobs:
           fi
 
       - name: Esegui monitor
-        if: ${{ !inputs.supabase_readonly_check }}
+        if: ${{ !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata }}
         env:
           DIDUP_SCHOOL: ${{ secrets.CODICE_SCUOLA }}
           DIDUP_USER: ${{ secrets.USERNAME }}
@@ -87,7 +100,7 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           SUPABASE_STORAGE_BUCKET: circulars
-          BROWSER_PROBE_LATEST: ${{ inputs.open_latest_circular && !inputs.supabase_readonly_check }}
+          BROWSER_PROBE_LATEST: ${{ inputs.open_latest_circular && !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata }}
         run: python monitor.py
 
       - name: Salva JSON e storico nel repository

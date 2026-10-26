@@ -305,7 +305,9 @@ def download_circulars(didup: Any, items: list[Any]) -> dict[str, dict[str, str]
                 pdf_bytes = click_bacheca_attachment(page, item, allegato)
                 path = upload_circular_pdf(pdf_bytes)
                 key = item_key(item, ("prg_messaggio", "prg_bacheca", "prg", "id"))
-                downloaded[key] = {"path": path, "name": first_attr(allegato, ("nome_file", "descrizione_file"), "circolare.pdf")}
+                entry = {"path": path, "name": first_attr(allegato, ("nome_file", "descrizione_file"), "circolare.pdf")}
+                downloaded[key] = entry
+                downloaded[f"object:{id(item)}"] = entry
                 log.info("Circolare acquisita nello storage interno")
             except Exception as exc:
                 status = getattr(exc, "status", None)
@@ -483,7 +485,8 @@ def build_voto_data(
                     attachment_url = allegato_path or allegato_url or attachment_url
                 attachment_name = attachment_name or first_attr(allegato, ("nome_file", "descrizione_file"))
             item_id = item_key(item, ("prg_messaggio", "prg_bacheca", "prg", "id")) or f"{kind}-{index}"
-            local_file = (circular_files or {}).get(item_id)
+            files = circular_files or {}
+            local_file = files.get(f"object:{id(item)}") or files.get(item_id)
             attachment_path = local_file["path"] if local_file else None
             if local_file:
                 attachment_url = None
@@ -524,10 +527,13 @@ def save_voto_data(
     circular_files: dict[str, dict[str, str]] | None = None,
 ) -> None:
     output = Path(os.environ.get("VOTO_FILE") or "grades.json")
+    payload = build_voto_data(data, stats, circular_files)
     output.write_text(
-        json.dumps(build_voto_data(data, stats, circular_files), indent=2, ensure_ascii=False) + "\n",
+        json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
+    linked_pdfs = sum(bool(item.get("attachmentPath")) for item in payload["notifications"])
+    log.info("PDF interni associati ai metadati: %d", linked_pdfs)
 
 
 def build_trend_line(stats: dict[str, Any], precedente: dict[str, Any]) -> str:
