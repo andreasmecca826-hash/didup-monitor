@@ -2,6 +2,12 @@ name: Check DidUP
 
 on:
   workflow_dispatch:
+    inputs:
+      open_latest_circular:
+        description: "Test singolo: apri l'allegato della circolare più recente nella Bacheca"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -27,15 +33,20 @@ jobs:
           python-version: "3.12"
 
       - name: Cache Chromium Playwright
+        if: ${{ inputs.open_latest_circular }}
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-1.64.1-chromium
 
       - name: Installa dipendenze
+        run: python -m pip install "didupwrapper>=0.1.1,<0.2" requests
+
+      - name: Installa browser per il test singolo
+        if: ${{ inputs.open_latest_circular }}
         run: |
-          python -m pip install "didupwrapper>=0.1.1,<0.2" requests "playwright==1.64.1"
-          python -m playwright install --with-deps chromium
+          python -m pip install "playwright==1.64.1"
+          python -m playwright install --only-shell chromium
 
       - name: Inizializza file di stato se mancanti
         run: |
@@ -61,6 +72,7 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           SUPABASE_STORAGE_BUCKET: circulars
+          BROWSER_PROBE_LATEST: ${{ inputs.open_latest_circular }}
         run: python monitor.py
 
       - name: Salva JSON e storico nel repository

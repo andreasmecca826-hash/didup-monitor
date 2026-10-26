@@ -183,55 +183,96 @@ class BrowserHTTPError(RuntimeError):
         self.status = status
 
 
-def browser_download(page: Any, source: str) -> bytes:
-    """Apre il link nel browser autenticato senza inoltrare header API a host terzi."""
+def click_bacheca_attachment(page: Any, item: Any, allegato: Any) -> bytes:
+    """Apre una comunicazione e clicca il suo allegato, mai i controlli di presa visione."""
     from playwright.sync_api import Error as PlaywrightError
 
-    parsed = urlsplit(source)
-    if parsed.scheme != "https" or not parsed.hostname:
-        raise ValueError("URL allegato non HTTPS valido")
+    message = first_attr(item, ("messaggio",))
+    name = first_attr(allegato, ("nome_file", "descrizione_file"))
+    if not message or not name:
+        raise RuntimeError("Metadati della comunicazione o allegato non disponibili")
+
+    message_locator = page.get_by_text(message[:100], exact=False)
+    if not message_locator.count():
+        raise RuntimeError("Comunicazione più recente non trovata nella Bacheca")
+    visible_message = None
+    for index in range(min(message_locator.count(), 10)):
+        candidate = message_locator.nth(index)
+        if candidate.is_visible():
+            visible_message = candidate
+            break
+    if visible_message is None:
+        raise RuntimeError("Comunicazione più recente non visibile nella Bacheca")
+    visible_message.click(timeout=5000)
+    page.wait_for_timeout(1000)
+
+    file_locator = page.get_by_text(name, exact=False)
+    target = None
+    for index in range(min(file_locator.count(), 10)):
+        candidate = file_locator.nth(index)
+        if candidate.is_visible():
+            target = candidate
+            break
+    if target is None:
+        raise RuntimeError("Allegato non trovato nella comunicazione aperta")
+    target_text = (target.inner_text() or "").casefold()
+    if "presa visione" in target_text or "adesione" in target_text:
+        raise RuntimeError("Controllo di presa visione/adesione escluso dal test")
+
     downloads: list[Any] = []
-    handler = lambda download: downloads.append(download)
-    page.on("download", handler)
-    response = None
+    responses: list[Any] = []
+    def on_download(download: Any) -> None:
+        downloads.append(download)
+    def on_response(response: Any) -> None:
+        content_type = response.headers.get("content-type", "").lower()
+        if "application/pdf" in content_type:
+            responses.append(response)
+    page.on("download", on_download)
+    page.on("response", on_response)
     try:
         try:
-            response = page.goto(
-                source,
-                wait_until="domcontentloaded",
-                timeout=45000,
-                referer="https://www.portaleargo.it/famiglia",
-            )
+            target.click(timeout=5000)
         except PlaywrightError:
-            # I download con Content-Disposition possono interrompere la navigazione.
             pass
+        page.wait_for_timeout(2000)
     finally:
-        page.remove_listener("download", handler)
-    page.wait_for_timeout(500)
+        page.remove_listener("download", on_download)
+        page.remove_listener("response", on_response)
+
     if downloads:
         path = downloads[-1].path()
-        if not path:
-            raise RuntimeError("Download browser senza file temporaneo")
-        return Path(path).read_bytes()
-    if response is None:
-        raise RuntimeError("Il browser non ha ricevuto una risposta PDF")
-    if response.status >= 400:
-        raise BrowserHTTPError(response.status)
-    return response.body()
+        if path:
+            return Path(path).read_bytes()
+    for response in reversed(responses):
+        if response.status >= 400:
+            raise BrowserHTTPError(response.status)
+        content = response.body()
+        if content.startswith(b"%PDF-"):
+            return content
+    raise RuntimeError("Il click dalla Bacheca non ha restituito un PDF")
 
 
 def download_circulars(didup: Any, items: list[Any]) -> dict[str, dict[str, str]]:
-    """Scarica gli allegati recenti tramite browser autenticato e li carica in Supabase."""
+    """Prova esplicita, singola, dell'apertura in Bacheca; non gira nei run ordinari."""
+    downloaded: dict[str, dict[str, str]] = {}
+    if os.environ.get("BROWSER_PROBE_LATEST", "").lower() != "true":
+        return downloaded
     from playwright.sync_api import sync_playwright
 
-    downloaded: dict[str, dict[str, str]] = {}
     candidates = [
         (item, (getattr(item, "lista_allegati", None) or [])[:1])
         for item in items
         if circular_is_recent(first_attr(item, ("dat_giorno", "dat_evento", "data")))
     ]
-    if not any(allegati for _, allegati in candidates):
+    candidates = [(item, allegati) for item, allegati in candidates if allegati]
+    candidates.sort(
+        key=lambda pair: parse_date(first_attr(pair[0], ("dat_giorno", "dat_evento", "data"))) or date.min,
+        reverse=True,
+    )
+    if not candidates:
         return downloaded
+    item, allegati = candidates[0]
+    allegato = allegati[0]
 
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=True)
@@ -240,32 +281,18 @@ def download_circulars(didup: Any, items: list[Any]) -> dict[str, dict[str, str]
         try:
             login_browser(page)
             open_bacheca(page)
-            for item, allegati in candidates:
-                for allegato in allegati:
-                    allegato_url = first_attr(allegato, ("url",))
-                    allegato_path = first_attr(allegato, ("path",))
-                    source = allegato_path or allegato_url
-                    if allegato_path and not allegato_path.startswith("http"):
-                        source = f"{allegato_url.rstrip('/')}/{allegato_path.lstrip('/')}" if allegato_url else allegato_path
-                    if not source:
-                        continue
-                    name = first_attr(allegato, ("nome_file", "descrizione_file"), "circolare.pdf")
-                    try:
-                        pdf_bytes = browser_download(page, source)
-                        path = upload_circular_pdf(pdf_bytes)
-                        key = item_key(item, ("prg_messaggio", "prg_bacheca", "prg", "id"))
-                        downloaded[key] = {"path": path, "name": name}
-                        log.info("Circolare acquisita nello storage interno")
-                    except Exception as exc:
-                        status = getattr(exc, "status", None)
-                        if status is not None:
-                            log.error("Download browser circolare fallito (HTTP %s)", status)
-                            if status == 403:
-                                log.error("Test Bacheca interrotto al primo HTTP 403")
-                                return downloaded
-                        else:
-                            log.error("Download browser circolare fallito (%s)", type(exc).__name__)
-                    break
+            try:
+                pdf_bytes = click_bacheca_attachment(page, item, allegato)
+                path = upload_circular_pdf(pdf_bytes)
+                key = item_key(item, ("prg_messaggio", "prg_bacheca", "prg", "id"))
+                downloaded[key] = {"path": path, "name": first_attr(allegato, ("nome_file", "descrizione_file"), "circolare.pdf")}
+                log.info("Circolare acquisita nello storage interno")
+            except Exception as exc:
+                status = getattr(exc, "status", None)
+                if status is not None:
+                    log.error("Download UI Bacheca fallito (HTTP %s)", status)
+                else:
+                    log.error("Download UI Bacheca fallito (%s)", type(exc).__name__)
         finally:
             context.close()
             browser.close()
