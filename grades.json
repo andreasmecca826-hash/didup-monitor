@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-26T10:37:36.084351+00:00",
+  "updatedAt": "2026-10-26T10:43:43.632898+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -16,50 +16,7 @@
       ]
     }
   ],
-  "assignments": [
-    {
-      "id": "h:284540198b0c9841",
-      "title": "[]",
-      "subject": "EDUCAZIONE CIVICA",
-      "dueDate": "2026-10-26",
-      "completed": false
-    },
-    {
-      "id": "h:1767a78d03b0a126",
-      "title": "[]",
-      "subject": "TECNOLOGIE E TECNICHE DI RAPPRESENTAZIONE GRAFICA",
-      "dueDate": "2026-10-26",
-      "completed": false
-    },
-    {
-      "id": "h:bace094028f54f2b",
-      "title": "[]",
-      "subject": "LABORATORIO TTRG",
-      "dueDate": "2026-10-26",
-      "completed": false
-    },
-    {
-      "id": "h:0d78435f432364f3",
-      "title": "[]",
-      "subject": "DIRITTO ED ECOMOMIA",
-      "dueDate": "2026-10-26",
-      "completed": false
-    },
-    {
-      "id": "h:48e38884df5209c6",
-      "title": "[]",
-      "subject": "EDUCAZIONE CIVICA",
-      "dueDate": "2026-10-26",
-      "completed": false
-    },
-    {
-      "id": "h:66aee217331166d4",
-      "title": "[]",
-      "subject": "EDUCAZIONE CIVICA",
-      "dueDate": "2026-10-26",
-      "completed": false
-    }
-  ],
+  "assignments": [],
   "notifications": [
     {
       "id": "h:e34443f22d06d6bd",

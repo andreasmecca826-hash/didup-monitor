@@ -33,3 +33,7 @@ Eventi registrati automaticamente dal monitor.
 ## 2026-10-26 09:52 UTC
 
 - **Bacheca DidUP** — Nuova comunicazione — Data: 2026-10-26 — Elezioni rinnovo componente alunni e genitori consigli di classe e componente alunni consiglio d'Istituto
+
+## 2026-10-26 10:43 UTC
+
+- **22 novità su DidUP (compiti)** — Apri il registro per i dettagli.
