@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-26T20:53:43.839645+00:00",
+  "updatedAt": "2026-10-26T21:06:23.474479+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -852,8 +852,8 @@
       "date": "2026-10-26 00:00:00",
       "subject": "COMUNICAZIONI",
       "read": false,
-      "attachmentPath": null,
-      "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/e7fe03f5-b4b8-402b-bd17-f919bf5b5f97",
+      "attachmentPath": "circulars/a00b4d911b36325d49a475ea9b70a42d1f7bd21cbc7f4054e662bfdf3098f2be.pdf",
+      "attachmentUrl": null,
       "attachmentName": "comunicazione elezioni.pdf"
     },
     {
