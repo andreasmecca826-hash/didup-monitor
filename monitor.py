@@ -521,6 +521,34 @@ def build_voto_data(
     }
 
 
+def existing_circular_paths(output: Path) -> tuple[dict[str, str], dict[str, str]]:
+    """Restituisce i path interni già pubblicati, indicizzati per ID e URL sorgente."""
+    if not output.exists():
+        return {}, {}
+    try:
+        previous = json.loads(output.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}, {}
+    notifications = previous.get("notifications") if isinstance(previous, dict) else None
+    if not isinstance(notifications, list):
+        return {}, {}
+
+    by_id: dict[str, str] = {}
+    by_url: dict[str, str] = {}
+    for item in notifications:
+        if not isinstance(item, dict):
+            continue
+        path = item.get("attachmentPath")
+        if not isinstance(path, str) or not re.fullmatch(r"circulars/[a-f0-9]{64}\.pdf", path):
+            continue
+        if item.get("id") is not None:
+            by_id[str(item["id"])] = path
+        url = item.get("attachmentUrl")
+        if isinstance(url, str) and url:
+            by_url[url] = path
+    return by_id, by_url
+
+
 def save_voto_data(
     data: dict[str, list[Any] | None],
     stats: dict[str, Any],
@@ -528,12 +556,25 @@ def save_voto_data(
 ) -> None:
     output = Path(os.environ.get("VOTO_FILE") or "grades.json")
     payload = build_voto_data(data, stats, circular_files)
+    previous_by_id, previous_by_url = existing_circular_paths(output)
+    preserved = 0
+    for item in payload["notifications"]:
+        if not isinstance(item, dict) or item.get("attachmentPath"):
+            continue
+        path = previous_by_id.get(str(item.get("id"))) if item.get("id") is not None else None
+        url = item.get("attachmentUrl")
+        if not path and isinstance(url, str):
+            path = previous_by_url.get(url)
+        if path:
+            item["attachmentPath"] = path
+            preserved += 1
     output.write_text(
         json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
     linked_pdfs = sum(bool(item.get("attachmentPath")) for item in payload["notifications"])
     log.info("PDF interni associati ai metadati: %d", linked_pdfs)
+    log.info("Path PDF precedenti conservati: %d", preserved)
 
 
 def build_trend_line(stats: dict[str, Any], precedente: dict[str, Any]) -> str:
