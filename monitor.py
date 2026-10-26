@@ -27,7 +27,7 @@ import os
 import re
 import sys
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable, NamedTuple
 
@@ -38,6 +38,9 @@ NTFY_TOPIC = os.environ.get("NTFY_TOPIC") or "Morselli_alerts_didup"
 NTFY_URL = "https://ntfy.sh"
 STATE_FILE = Path(os.environ.get("STATE_FILE") or "state.json")
 HISTORY_FILE = Path(os.environ.get("HISTORY_FILE") or "history.md")
+CIRCULARS_DIR = Path(os.environ.get("CIRCULARS_DIR") or "circolari")
+CIRCULAR_RETENTION_DAYS = int(os.environ.get("CIRCULAR_RETENTION_DAYS") or "30")
+CIRCULARS_BASE_URL = os.environ.get("CIRCULARS_BASE_URL") or ""
 
 # Oltre questa soglia di novita' per sezione, invio un solo riepilogo
 MAX_NOTIFICHE = 10
@@ -98,6 +101,67 @@ def compito_text(item: Any) -> str:
         if text and text not in ("[]", "{}"):
             return text
     return ""
+
+
+def parse_date(value: str) -> date | None:
+    for fmt in ("%Y-%m-%d", "%Y-%m-%d %H:%M:%S", "%d/%m/%Y"):
+        try:
+            return datetime.strptime(value[: len(datetime.now().strftime(fmt))], fmt).date()
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
+def circular_is_recent(value: str) -> bool:
+    parsed = parse_date(value)
+    return parsed is None or parsed >= datetime.now(timezone.utc).date() - timedelta(days=CIRCULAR_RETENTION_DAYS)
+
+
+def circular_file_name(item: Any, attachment_name: str, index: int) -> str:
+    key = item_key(item, ("prg_messaggio", "prg_bacheca", "prg", "id"))
+    extension = Path(attachment_name).suffix.lower() or ".pdf"
+    return f"{slug(key)}-{slug(Path(attachment_name).stem)[:90] or f'circolare-{index}'}{extension}"
+
+
+def download_circulars(didup: Any, items: list[Any]) -> dict[str, dict[str, str]]:
+    """Scarica gli allegati recenti usando la sessione DidUP autenticata."""
+    if not CIRCULARS_BASE_URL:
+        log.warning("CIRCULARS_BASE_URL non configurato: mantengo gli URL DidUP")
+    CIRCULARS_DIR.mkdir(parents=True, exist_ok=True)
+    downloaded: dict[str, dict[str, str]] = {}
+    for index, item in enumerate(items):
+        event_date = first_attr(item, ("dat_giorno", "dat_evento", "data"))
+        if not circular_is_recent(event_date):
+            continue
+        allegati = getattr(item, "lista_allegati", None) or []
+        for allegato in allegati[:1]:
+            allegato_url = first_attr(allegato, ("url",))
+            allegato_path = first_attr(allegato, ("path",))
+            source = allegato_path or allegato_url
+            if allegato_path and not allegato_path.startswith("http"):
+                source = f"{allegato_url.rstrip('/')}/{allegato_path.lstrip('/')}" if allegato_url else allegato_path
+            if not source:
+                continue
+            name = first_attr(allegato, ("nome_file", "descrizione_file"), "circolare.pdf")
+            filename = circular_file_name(item, name, index)
+            target = CIRCULARS_DIR / filename
+            try:
+                if not target.exists():
+                    response = didup._run(didup._async._http.get(source, headers=didup._async._headers()))
+                    response.raise_for_status()
+                    target.write_bytes(response.content)
+                    log.info("Circolare scaricata: %s", filename)
+                key = item_key(item, ("prg_messaggio", "prg_bacheca", "prg", "id"))
+                downloaded[key] = {"url": f"{CIRCULARS_BASE_URL.rstrip('/')}/{filename}", "name": name}
+            except Exception:
+                log.exception("Download circolare fallito: %s", name)
+            break
+    cutoff = datetime.now(timezone.utc).timestamp() - CIRCULAR_RETENTION_DAYS * 86400
+    for file in CIRCULARS_DIR.glob("*"):
+        if file.is_file() and file.stat().st_mtime < cutoff:
+            file.unlink()
+            log.info("Circolare rimossa per anzianità: %s", file.name)
+    return downloaded
 
 
 def slug(value: str) -> str:
@@ -185,7 +249,11 @@ def compito_recente(data: str) -> bool:
     return giorno >= datetime.now(timezone.utc).date() - timedelta(days=1)
 
 
-def build_voto_data(data: dict[str, list[Any] | None], stats: dict[str, Any]) -> dict[str, Any]:
+def build_voto_data(
+    data: dict[str, list[Any] | None],
+    stats: dict[str, Any],
+    circular_files: dict[str, dict[str, str]] | None = None,
+) -> dict[str, Any]:
     """Converte i record DidUP completi nel formato letto dall'app VOTO."""
     grouped: dict[str, dict[str, Any]] = {}
     for index, voto in enumerate(data.get("voti") or []):
@@ -245,6 +313,8 @@ def build_voto_data(data: dict[str, list[Any] | None], stats: dict[str, Any]) ->
             title = first_attr(item, ("des_oggetto", "oggetto", "titolo", "des_titolo"), title_default)
             message = first_attr(item, ("des_messaggio", "messaggio", "testo", "des_testo", "nota", "descrizione"))
             event_date = first_attr(item, ("dat_giorno", "dat_evento", "data"))
+            if kind == "bacheca" and not circular_is_recent(event_date):
+                continue
             attachment_url = first_attr(item, ("url", "des_url"))
             attachment_name = first_attr(item, ("nome_file", "file_name"))
             allegati = getattr(item, "lista_allegati", None) or []
@@ -258,8 +328,13 @@ def build_voto_data(data: dict[str, list[Any] | None], stats: dict[str, Any]) ->
                 else:
                     attachment_url = allegato_path or allegato_url or attachment_url
                 attachment_name = attachment_name or first_attr(allegato, ("nome_file", "descrizione_file"))
+            item_id = item_key(item, ("prg_messaggio", "prg_bacheca", "prg", "id")) or f"{kind}-{index}"
+            local_file = (circular_files or {}).get(item_id)
+            if local_file:
+                attachment_url = local_file["url"]
+                attachment_name = local_file["name"]
             notifications.append({
-                "id": item_key(item, ("prg_messaggio", "prg_bacheca", "prg", "id")) or f"{kind}-{index}",
+                "id": item_id,
                 "type": "note" if kind == "note" else "notice",
                 "title": title,
                 "message": message or None,
@@ -287,9 +362,16 @@ def build_voto_data(data: dict[str, list[Any] | None], stats: dict[str, Any]) ->
     }
 
 
-def save_voto_data(data: dict[str, list[Any] | None], stats: dict[str, Any]) -> None:
+def save_voto_data(
+    data: dict[str, list[Any] | None],
+    stats: dict[str, Any],
+    circular_files: dict[str, dict[str, str]] | None = None,
+) -> None:
     output = Path(os.environ.get("VOTO_FILE") or "grades.json")
-    output.write_text(json.dumps(build_voto_data(data, stats), indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    output.write_text(
+        json.dumps(build_voto_data(data, stats, circular_files), indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
 
 
 def build_trend_line(stats: dict[str, Any], precedente: dict[str, Any]) -> str:
@@ -554,10 +636,12 @@ def fetch_all_once(
     """Un solo login + download di tutte le sezioni."""
     kwargs = {"auto_versione": True} if auto else {}
     with DiDUPClientSync(school, user, password, **kwargs) as didup:
-        out: dict[str, list[Any] | None] = {}
+        out: dict[str, Any] = {}
         for name, section in SECTIONS.items():
             try:
                 items = list(getattr(didup, section.method)())
+                if name == "bacheca":
+                    out["_circular_files"] = download_circulars(didup, items)
                 if name == "compiti":
                     # Il registro contiene sia l'attivita' svolta sia i compiti.
                     # L'attivita' viene archiviata separatamente e non passa mai
@@ -656,7 +740,7 @@ def main() -> int:
     if eventi:
         append_history(eventi)
 
-    save_voto_data(data, stats)
+    save_voto_data(data, stats, data.get("_circular_files"))
     save_state(state)
     return 0 if ok else 1
 
