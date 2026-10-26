@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-26T07:07:33.634576+00:00",
+  "updatedAt": "2026-10-26T07:22:54.274052+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -18,9 +18,30 @@
   ],
   "assignments": [
     {
+      "id": "h:284540198b0c9841",
+      "title": "[]",
+      "subject": "EDUCAZIONE CIVICA",
+      "dueDate": "2026-10-26",
+      "completed": false
+    },
+    {
       "id": "h:3e0feec12f11b63c",
       "title": "[]",
       "subject": "TECNOLOGIE E TECNICHE DI RAPPRESENTAZIONE GRAFICA",
+      "dueDate": "2026-10-26",
+      "completed": false
+    },
+    {
+      "id": "h:48e38884df5209c6",
+      "title": "[]",
+      "subject": "EDUCAZIONE CIVICA",
+      "dueDate": "2026-10-26",
+      "completed": false
+    },
+    {
+      "id": "h:66aee217331166d4",
+      "title": "[]",
+      "subject": "EDUCAZIONE CIVICA",
       "dueDate": "2026-10-26",
       "completed": false
     }
