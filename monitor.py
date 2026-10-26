@@ -41,8 +41,15 @@ STATE_FILE = Path(os.environ.get("STATE_FILE") or "state.json")
 HISTORY_FILE = Path(os.environ.get("HISTORY_FILE") or "history.md")
 CIRCULAR_RETENTION_DAYS = int(os.environ.get("CIRCULAR_RETENTION_DAYS") or "30")
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
-if SUPABASE_URL and not urlsplit(SUPABASE_URL).scheme:
-    SUPABASE_URL = f"https://{SUPABASE_URL}"
+if SUPABASE_URL:
+    candidate_url = SUPABASE_URL if urlsplit(SUPABASE_URL).scheme else f"https://{SUPABASE_URL}"
+    parsed_candidate = urlsplit(candidate_url)
+    if (
+        parsed_candidate.scheme == "https"
+        and re.fullmatch(r"[a-z0-9]{20}", parsed_candidate.netloc.lower())
+    ):
+        candidate_url = f"https://{parsed_candidate.netloc.lower()}.supabase.co"
+    SUPABASE_URL = candidate_url.rstrip("/")
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
 SUPABASE_STORAGE_BUCKET = os.environ.get("SUPABASE_STORAGE_BUCKET") or "circulars"
 MAX_CIRCULAR_BYTES = 25 * 1024 * 1024
