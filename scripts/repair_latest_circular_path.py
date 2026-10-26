@@ -9,6 +9,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 import requests
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from monitor import circular_is_recent, parse_date
 
 BUCKET_DEFAULT = "circulars"
