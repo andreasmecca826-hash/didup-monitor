@@ -30,6 +30,7 @@ import time
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable, NamedTuple
+from urllib.parse import urljoin, urlsplit
 
 import requests
 from didupwrapper import DiDUPClientSync
@@ -145,6 +146,43 @@ def upload_circular_pdf(pdf_bytes: bytes) -> str:
         raise RuntimeError(f"Upload Supabase non riuscito (HTTP {response.status_code})")
     return path
 
+
+def download_attachment(didup: Any, source: str) -> bytes:
+    """Scarica un allegato senza inoltrare token DidUP a host non Argo."""
+    current = source
+    for _ in range(6):
+        parsed = urlsplit(current)
+        if parsed.scheme != "https" or not parsed.hostname:
+            raise ValueError("URL allegato non HTTPS valido")
+        host = parsed.hostname.lower()
+        trusted_argo = (
+            host == "portaleargo.it"
+            or host.endswith(".portaleargo.it")
+            or host == "argosoft.it"
+            or host.endswith(".argosoft.it")
+        )
+        headers = {
+            "accept": "application/pdf, application/octet-stream, */*",
+            "referer": "https://www.portaleargo.it/",
+        }
+        if trusted_argo:
+            headers.update(didup._async._headers())
+            headers["accept"] = "application/pdf, application/octet-stream, */*"
+            headers.pop("content-type", None)
+        response = didup._run(
+            didup._async._http.get(current, headers=headers, follow_redirects=False)
+        )
+        if response.status_code in (301, 302, 303, 307, 308):
+            location = response.headers.get("location")
+            if not location:
+                response.raise_for_status()
+            current = urljoin(current, location)
+            continue
+        response.raise_for_status()
+        return response.content
+    raise RuntimeError("Troppi redirect durante il download dell'allegato")
+
+
 def download_circulars(didup: Any, items: list[Any]) -> dict[str, dict[str, str]]:
     """Scarica gli allegati recenti con la sessione DidUP e li mette in Supabase privato."""
     downloaded: dict[str, dict[str, str]] = {}
@@ -163,9 +201,7 @@ def download_circulars(didup: Any, items: list[Any]) -> dict[str, dict[str, str]
                 continue
             name = first_attr(allegato, ("nome_file", "descrizione_file"), "circolare.pdf")
             try:
-                response = didup._run(didup._async._http.get(source, headers=didup._async._headers()))
-                response.raise_for_status()
-                pdf_bytes = response.content
+                pdf_bytes = download_attachment(didup, source)
                 path = upload_circular_pdf(pdf_bytes)
                 key = item_key(item, ("prg_messaggio", "prg_bacheca", "prg", "id"))
                 downloaded[key] = {"path": path, "name": name}
