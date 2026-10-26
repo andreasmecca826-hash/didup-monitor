@@ -38,9 +38,11 @@ NTFY_TOPIC = os.environ.get("NTFY_TOPIC") or "Morselli_alerts_didup"
 NTFY_URL = "https://ntfy.sh"
 STATE_FILE = Path(os.environ.get("STATE_FILE") or "state.json")
 HISTORY_FILE = Path(os.environ.get("HISTORY_FILE") or "history.md")
-CIRCULARS_DIR = Path(os.environ.get("CIRCULARS_DIR") or "circolari")
 CIRCULAR_RETENTION_DAYS = int(os.environ.get("CIRCULAR_RETENTION_DAYS") or "30")
-CIRCULARS_BASE_URL = os.environ.get("CIRCULARS_BASE_URL") or ""
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
+SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
+SUPABASE_STORAGE_BUCKET = os.environ.get("SUPABASE_STORAGE_BUCKET") or "circulars"
+MAX_CIRCULAR_BYTES = 25 * 1024 * 1024
 
 # Oltre questa soglia di novita' per sezione, invio un solo riepilogo
 MAX_NOTIFICHE = 10
@@ -117,17 +119,34 @@ def circular_is_recent(value: str) -> bool:
     return parsed is None or parsed >= datetime.now(timezone.utc).date() - timedelta(days=CIRCULAR_RETENTION_DAYS)
 
 
-def circular_file_name(item: Any, attachment_name: str, index: int) -> str:
-    key = item_key(item, ("prg_messaggio", "prg_bacheca", "prg", "id"))
-    extension = Path(attachment_name).suffix.lower() or ".pdf"
-    return f"{slug(key)}-{slug(Path(attachment_name).stem)[:90] or f'circolare-{index}'}{extension}"
-
+def upload_circular_pdf(pdf_bytes: bytes) -> str:
+    """Carica un PDF nel bucket privato usando solo credenziali server-side."""
+    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+        raise RuntimeError("Supabase non configurato nel workflow")
+    if len(pdf_bytes) > MAX_CIRCULAR_BYTES:
+        raise ValueError("PDF oltre il limite di 25 MB")
+    if not pdf_bytes.startswith(b"%PDF-"):
+        raise ValueError("Il contenuto scaricato non è un PDF valido")
+    digest = hashlib.sha256(pdf_bytes).hexdigest()
+    path = f"circulars/{digest}.pdf"
+    response = requests.post(
+        f"{SUPABASE_URL}/storage/v1/object/{SUPABASE_STORAGE_BUCKET}/{path}",
+        headers={
+            "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
+            "apikey": SUPABASE_SERVICE_ROLE_KEY,
+            "Content-Type": "application/pdf",
+            "Cache-Control": "private, max-age=31536000, immutable",
+            "x-upsert": "true",
+        },
+        data=pdf_bytes,
+        timeout=60,
+    )
+    if not response.ok:
+        raise RuntimeError(f"Upload Supabase non riuscito (HTTP {response.status_code})")
+    return path
 
 def download_circulars(didup: Any, items: list[Any]) -> dict[str, dict[str, str]]:
-    """Scarica gli allegati recenti usando la sessione DidUP autenticata."""
-    if not CIRCULARS_BASE_URL:
-        log.warning("CIRCULARS_BASE_URL non configurato: mantengo gli URL DidUP")
-    CIRCULARS_DIR.mkdir(parents=True, exist_ok=True)
+    """Scarica gli allegati recenti con la sessione DidUP e li mette in Supabase privato."""
     downloaded: dict[str, dict[str, str]] = {}
     for index, item in enumerate(items):
         event_date = first_attr(item, ("dat_giorno", "dat_evento", "data"))
@@ -143,26 +162,19 @@ def download_circulars(didup: Any, items: list[Any]) -> dict[str, dict[str, str]
             if not source:
                 continue
             name = first_attr(allegato, ("nome_file", "descrizione_file"), "circolare.pdf")
-            filename = circular_file_name(item, name, index)
-            target = CIRCULARS_DIR / filename
             try:
-                if not target.exists():
-                    response = didup._run(didup._async._http.get(source, headers=didup._async._headers()))
-                    response.raise_for_status()
-                    target.write_bytes(response.content)
-                    log.info("Circolare scaricata: %s", filename)
+                response = didup._run(didup._async._http.get(source, headers=didup._async._headers()))
+                response.raise_for_status()
+                pdf_bytes = response.content
+                path = upload_circular_pdf(pdf_bytes)
                 key = item_key(item, ("prg_messaggio", "prg_bacheca", "prg", "id"))
-                downloaded[key] = {"url": f"{CIRCULARS_BASE_URL.rstrip('/')}/{filename}", "name": name}
-            except Exception:
-                log.exception("Download circolare fallito: %s", name)
+                downloaded[key] = {"path": path, "name": name}
+                log.info("Circolare acquisita nello storage interno")
+            except Exception as exc:
+                # Non registrare URL, nome o percorso dell'allegato nei log.
+                log.error("Download/upload circolare fallito (%s)", type(exc).__name__)
             break
-    cutoff = datetime.now(timezone.utc).timestamp() - CIRCULAR_RETENTION_DAYS * 86400
-    for file in CIRCULARS_DIR.glob("*"):
-        if file.is_file() and file.stat().st_mtime < cutoff:
-            file.unlink()
-            log.info("Circolare rimossa per anzianità: %s", file.name)
     return downloaded
-
 
 def slug(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-") or "materia"
@@ -330,8 +342,9 @@ def build_voto_data(
                 attachment_name = attachment_name or first_attr(allegato, ("nome_file", "descrizione_file"))
             item_id = item_key(item, ("prg_messaggio", "prg_bacheca", "prg", "id")) or f"{kind}-{index}"
             local_file = (circular_files or {}).get(item_id)
+            attachment_path = local_file["path"] if local_file else None
             if local_file:
-                attachment_url = local_file["url"]
+                attachment_url = None
                 attachment_name = local_file["name"]
             notifications.append({
                 "id": item_id,
@@ -341,6 +354,7 @@ def build_voto_data(
                 "date": event_date or None,
                 "subject": first_attr(item, ("categoria", "category", "des_categoria")) or None,
                 "read": False,
+                "attachmentPath": attachment_path,
                 "attachmentUrl": attachment_url or None,
                 "attachmentName": attachment_name or None,
             })
