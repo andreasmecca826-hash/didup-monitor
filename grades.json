@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-26T06:52:40.817194+00:00",
+  "updatedAt": "2026-10-26T07:07:33.634576+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -16,7 +16,15 @@
       ]
     }
   ],
-  "assignments": [],
+  "assignments": [
+    {
+      "id": "h:3e0feec12f11b63c",
+      "title": "[]",
+      "subject": "TECNOLOGIE E TECNICHE DI RAPPRESENTAZIONE GRAFICA",
+      "dueDate": "2026-10-26",
+      "completed": false
+    }
+  ],
   "notifications": [
     {
       "id": "h:91e1f67c75ed62af",
