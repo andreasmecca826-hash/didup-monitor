@@ -40,7 +40,9 @@ NTFY_URL = "https://ntfy.sh"
 STATE_FILE = Path(os.environ.get("STATE_FILE") or "state.json")
 HISTORY_FILE = Path(os.environ.get("HISTORY_FILE") or "history.md")
 CIRCULAR_RETENTION_DAYS = int(os.environ.get("CIRCULAR_RETENTION_DAYS") or "30")
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
+if SUPABASE_URL and not urlsplit(SUPABASE_URL).scheme:
+    SUPABASE_URL = f"https://{SUPABASE_URL}"
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
 SUPABASE_STORAGE_BUCKET = os.environ.get("SUPABASE_STORAGE_BUCKET") or "circulars"
 MAX_CIRCULAR_BYTES = 25 * 1024 * 1024
@@ -124,6 +126,9 @@ def upload_circular_pdf(pdf_bytes: bytes) -> str:
     """Carica un PDF nel bucket privato usando solo credenziali server-side."""
     if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
         raise RuntimeError("Supabase non configurato nel workflow")
+    parsed_url = urlsplit(SUPABASE_URL)
+    if parsed_url.scheme != "https" or not parsed_url.netloc:
+        raise RuntimeError("SUPABASE_URL non valido: è richiesto un URL HTTPS")
     if len(pdf_bytes) > MAX_CIRCULAR_BYTES:
         raise ValueError("PDF oltre il limite di 25 MB")
     if not pdf_bytes.startswith(b"%PDF-"):
