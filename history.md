@@ -17,3 +17,7 @@ Eventi registrati automaticamente dal monitor.
 - **Assenza** — 2026-10-26 00:00:00 — Assenza
 - **Nuovi compiti** — TECNOLOGIE E TECNICHE DI RAPPRESENTAZIONE GRAFICA — Data: 2026-10-26 — []
 - **Nuovi compiti** — LABORATORIO TTRG — Data: 2026-10-26 — []
+
+## 2026-10-26 08:37 UTC
+
+- **Nuovi compiti** — DIRITTO ED ECOMOMIA — Data: 2026-10-26 — []

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-26T08:22:34.245382+00:00",
+  "updatedAt": "2026-10-26T08:37:31.469548+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -35,6 +35,13 @@
       "id": "h:bace094028f54f2b",
       "title": "[]",
       "subject": "LABORATORIO TTRG",
+      "dueDate": "2026-10-26",
+      "completed": false
+    },
+    {
+      "id": "h:3b54d0b565807616",
+      "title": "[]",
+      "subject": "DIRITTO ED ECOMOMIA",
       "dueDate": "2026-10-26",
       "completed": false
     },
