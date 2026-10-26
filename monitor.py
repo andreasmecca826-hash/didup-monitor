@@ -30,7 +30,7 @@ import time
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable, NamedTuple
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import urlsplit
 
 import requests
 from didupwrapper import DiDUPClientSync
@@ -147,73 +147,112 @@ def upload_circular_pdf(pdf_bytes: bytes) -> str:
     return path
 
 
-def download_attachment(didup: Any, source: str) -> bytes:
-    """Scarica un allegato senza inoltrare token DidUP a host non Argo."""
-    current = source
-    for _ in range(6):
-        parsed = urlsplit(current)
-        if parsed.scheme != "https" or not parsed.hostname:
-            raise ValueError("URL allegato non HTTPS valido")
-        host = parsed.hostname.lower()
-        trusted_argo = (
-            host == "portaleargo.it"
-            or host.endswith(".portaleargo.it")
-            or host == "argosoft.it"
-            or host.endswith(".argosoft.it")
-        )
-        headers = {
-            "accept": "application/pdf, application/octet-stream, */*",
-            "referer": "https://www.portaleargo.it/",
-        }
-        if trusted_argo:
-            headers.update(didup._async._headers())
-            headers["accept"] = "application/pdf, application/octet-stream, */*"
-            headers.pop("content-type", None)
-        response = didup._run(
-            didup._async._http.get(current, headers=headers, follow_redirects=False)
-        )
-        if response.status_code in (301, 302, 303, 307, 308):
-            location = response.headers.get("location")
-            if not location:
-                response.raise_for_status()
-            current = urljoin(current, location)
-            continue
-        response.raise_for_status()
-        return response.content
-    raise RuntimeError("Troppi redirect durante il download dell'allegato")
+def login_browser(page: Any) -> None:
+    """Apre la sessione web DidUP usando i secrets già forniti al workflow."""
+    school = os.environ.get("DIDUP_SCHOOL", "")
+    username = os.environ.get("DIDUP_USER", "")
+    password = os.environ.get("DIDUP_PASSWORD", "")
+    if not all((school, username, password)):
+        raise RuntimeError("Credenziali DidUP non configurate nel workflow")
+    page.goto("https://www.portaleargo.it/famiglia", wait_until="domcontentloaded", timeout=45000)
+    page.wait_for_selector("#codiceScuola", timeout=30000)
+    page.locator("#codiceScuola").fill(school)
+    page.locator("#username").fill(username)
+    page.locator("#password").fill(password)
+    page.locator("#accediBtn").click()
+    page.wait_for_timeout(5000)
+    if page.locator("#password").count() and page.locator("#password").is_visible():
+        raise RuntimeError("Login web DidUP non completato")
+
+
+class BrowserHTTPError(RuntimeError):
+    def __init__(self, status: int):
+        super().__init__(f"HTTP {status}")
+        self.status = status
+
+
+def browser_download(page: Any, source: str) -> bytes:
+    """Apre il link nel browser autenticato senza inoltrare header API a host terzi."""
+    from playwright.sync_api import Error as PlaywrightError
+
+    parsed = urlsplit(source)
+    if parsed.scheme != "https" or not parsed.hostname:
+        raise ValueError("URL allegato non HTTPS valido")
+    downloads: list[Any] = []
+    handler = lambda download: downloads.append(download)
+    page.on("download", handler)
+    response = None
+    try:
+        try:
+            response = page.goto(
+                source,
+                wait_until="domcontentloaded",
+                timeout=45000,
+                referer="https://www.portaleargo.it/famiglia",
+            )
+        except PlaywrightError:
+            # I download con Content-Disposition possono interrompere la navigazione.
+            pass
+    finally:
+        page.remove_listener("download", handler)
+    page.wait_for_timeout(500)
+    if downloads:
+        path = downloads[-1].path()
+        if not path:
+            raise RuntimeError("Download browser senza file temporaneo")
+        return Path(path).read_bytes()
+    if response is None:
+        raise RuntimeError("Il browser non ha ricevuto una risposta PDF")
+    if response.status >= 400:
+        raise BrowserHTTPError(response.status)
+    return response.body()
 
 
 def download_circulars(didup: Any, items: list[Any]) -> dict[str, dict[str, str]]:
-    """Scarica gli allegati recenti con la sessione DidUP e li mette in Supabase privato."""
+    """Scarica gli allegati recenti tramite browser autenticato e li carica in Supabase."""
+    from playwright.sync_api import sync_playwright
+
     downloaded: dict[str, dict[str, str]] = {}
-    for index, item in enumerate(items):
-        event_date = first_attr(item, ("dat_giorno", "dat_evento", "data"))
-        if not circular_is_recent(event_date):
-            continue
-        allegati = getattr(item, "lista_allegati", None) or []
-        for allegato in allegati[:1]:
-            allegato_url = first_attr(allegato, ("url",))
-            allegato_path = first_attr(allegato, ("path",))
-            source = allegato_path or allegato_url
-            if allegato_path and not allegato_path.startswith("http"):
-                source = f"{allegato_url.rstrip('/')}/{allegato_path.lstrip('/')}" if allegato_url else allegato_path
-            if not source:
-                continue
-            name = first_attr(allegato, ("nome_file", "descrizione_file"), "circolare.pdf")
-            try:
-                pdf_bytes = download_attachment(didup, source)
-                path = upload_circular_pdf(pdf_bytes)
-                key = item_key(item, ("prg_messaggio", "prg_bacheca", "prg", "id"))
-                downloaded[key] = {"path": path, "name": name}
-                log.info("Circolare acquisita nello storage interno")
-            except Exception as exc:
-                # Non registrare URL, nome o percorso dell'allegato nei log.
-                status = getattr(getattr(exc, "response", None), "status_code", None)
-                if status is not None:
-                    log.error("Download/upload circolare fallito (HTTP %s)", status)
-                else:
-                    log.error("Download/upload circolare fallito (%s)", type(exc).__name__)
-            break
+    candidates = [
+        (item, (getattr(item, "lista_allegati", None) or [])[:1])
+        for item in items
+        if circular_is_recent(first_attr(item, ("dat_giorno", "dat_evento", "data")))
+    ]
+    if not any(allegati for _, allegati in candidates):
+        return downloaded
+
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch(headless=True)
+        context = browser.new_context(accept_downloads=True)
+        page = context.new_page()
+        try:
+            login_browser(page)
+            for item, allegati in candidates:
+                for allegato in allegati:
+                    allegato_url = first_attr(allegato, ("url",))
+                    allegato_path = first_attr(allegato, ("path",))
+                    source = allegato_path or allegato_url
+                    if allegato_path and not allegato_path.startswith("http"):
+                        source = f"{allegato_url.rstrip('/')}/{allegato_path.lstrip('/')}" if allegato_url else allegato_path
+                    if not source:
+                        continue
+                    name = first_attr(allegato, ("nome_file", "descrizione_file"), "circolare.pdf")
+                    try:
+                        pdf_bytes = browser_download(page, source)
+                        path = upload_circular_pdf(pdf_bytes)
+                        key = item_key(item, ("prg_messaggio", "prg_bacheca", "prg", "id"))
+                        downloaded[key] = {"path": path, "name": name}
+                        log.info("Circolare acquisita nello storage interno")
+                    except Exception as exc:
+                        status = getattr(exc, "status", None)
+                        if status is not None:
+                            log.error("Download browser circolare fallito (HTTP %s)", status)
+                        else:
+                            log.error("Download browser circolare fallito (%s)", type(exc).__name__)
+                    break
+        finally:
+            context.close()
+            browser.close()
     return downloaded
 
 def slug(value: str) -> str:
