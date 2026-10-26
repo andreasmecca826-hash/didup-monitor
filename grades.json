@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-26T19:22:55.300695+00:00",
+  "updatedAt": "2026-10-26T19:37:48.979048+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -852,6 +852,7 @@
       "date": "2026-10-26 00:00:00",
       "subject": "COMUNICAZIONI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/e7fe03f5-b4b8-402b-bd17-f919bf5b5f97",
       "attachmentName": "comunicazione elezioni.pdf"
     },
@@ -863,6 +864,7 @@
       "date": "2026-10-26 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/50e89cd6-1ce7-497b-a6ef-233c9109c74f",
       "attachmentName": "_timbro_circ. assem ottobre.pdf"
     },
@@ -874,6 +876,7 @@
       "date": "2026-10-24 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/a158d61f-ee5d-46d7-938f-eba658d32782",
       "attachmentName": "timbro_circ n. 95  Incontri di sensibilizzazione per la Giornata internazionale per l'eliminazione della violenza contro le donne  Calendar.pdf"
     },
@@ -885,6 +888,7 @@
       "date": "2026-10-23 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/3bc78f28-6cf5-4d11-a7ff-9068d77804b7",
       "attachmentName": "circ-094_orario-provvisorio_2026-10-26_timbro.pdf"
     },
@@ -896,6 +900,7 @@
       "date": "2026-10-23 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/2ec9cd3b-9de5-444a-ba00-ceb946a346eb",
       "attachmentName": "OrdinanzaOrdinanzeContingibiliUrgenti - 2026-10-23T133249.946.pdf"
     },
@@ -907,6 +912,7 @@
       "date": "2026-10-23 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/e15968ca-57bc-465a-a7ed-28cb01728cbd",
       "attachmentName": "timbro_Circolare n. 92 Uscita didattica Visione del film Carlo Acutis. Il giovane Santo.pdf"
     },
@@ -918,6 +924,7 @@
       "date": "2026-10-22 00:00:00",
       "subject": "COMUNICAZIONI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": null,
       "attachmentName": null
     },
@@ -929,6 +936,7 @@
       "date": "2026-10-22 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/8b503b0a-19f1-41ae-a673-4221c332d8c4",
       "attachmentName": "timbro_potenzialità delle donne.pdf"
     },
@@ -940,6 +948,7 @@
       "date": "2026-10-22 00:00:00",
       "subject": "COMUNICAZIONI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": null,
       "attachmentName": null
     },
@@ -951,6 +960,7 @@
       "date": "2026-10-16 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/3dec301b-e511-47ce-8c05-acb14529d8cb",
       "attachmentName": "circ-088_orario-provvisorio_2026-10-19_serale_timbro.pdf"
     },
@@ -962,6 +972,7 @@
       "date": "2026-10-16 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/48acc91b-05c1-4e9c-8afb-f937845b9ed9",
       "attachmentName": "timbro_cir.uscita didattica ragusa -scoglitti.pdf"
     },
@@ -973,6 +984,7 @@
       "date": "2026-10-16 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/0c454286-911e-472c-8889-29cb8dad5863",
       "attachmentName": "circ-086_orario-provvisorio_2026-10-19_timbro.pdf"
     },
@@ -984,6 +996,7 @@
       "date": "2026-10-16 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/7b3d73e4-7b0f-4022-aefd-5d553765022e",
       "attachmentName": "timbro_Circ.  n. 85  Visione del film CArlo Acutis. Il giovane santo.pdf"
     },
@@ -995,6 +1008,7 @@
       "date": "2026-10-16 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/6329bc55-0140-4682-b118-9c1c75533ff5",
       "attachmentName": "timbro_integrazione alla circ. n. 74 uscita didattica visione del film Il mio nome è Carlo..pdf"
     },
@@ -1006,6 +1020,7 @@
       "date": "2026-10-16 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/5bad923a-c16c-4267-a359-2e87836709cb",
       "attachmentName": "timbro_Circolare 83 Spostamento classi.pdf"
     },
@@ -1017,6 +1032,7 @@
       "date": "2026-10-15 00:00:00",
       "subject": "COMUNICAZIONI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/184ba875-a56e-41ea-859e-6aa78191036f",
       "attachmentName": "visione film Morselli 19.10 elenco definitivo.pdf"
     },
@@ -1028,6 +1044,7 @@
       "date": "2026-10-15 00:00:00",
       "subject": "COMUNICAZIONI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": null,
       "attachmentName": null
     },
@@ -1039,6 +1056,7 @@
       "date": "2026-10-15 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/07789271-11c1-468b-aa64-e92fd221e62c",
       "attachmentName": "_timbro_visione film Morselli 19.10.pdf"
     },
@@ -1050,6 +1068,7 @@
       "date": "2026-10-15 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/0adcfbb4-a4f9-4eb8-9a17-9af3bc9ac788",
       "attachmentName": "timbro_Circolare 80 Gestione cancello sede piano notaro.pdf"
     },
@@ -1061,6 +1080,7 @@
       "date": "2026-10-15 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/7bcf06ec-c086-4466-acbe-d1eb84096401",
       "attachmentName": "timbro_Circolare 79 Utilizzo parcheggi.pdf"
     },
@@ -1072,6 +1092,7 @@
       "date": "2026-10-14 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/e2b58c70-250f-47da-84ef-64e35c202840",
       "attachmentName": "timbro_contributo assicurativo 2026-27 (1) (1).pdf"
     },
@@ -1083,6 +1104,7 @@
       "date": "2026-10-14 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/39a55c55-43d4-4ac6-822c-df51c0f98b8b",
       "attachmentName": "timbro_Circolare sciopero 16 ottobre.pdf"
     },
@@ -1094,6 +1116,7 @@
       "date": "2026-10-13 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/4e0ed2cc-9a5b-43b3-ba78-09c146c70f03",
       "attachmentName": "circ-075_stati-generali-scuola_circolare_timbro.pdf"
     },
@@ -1105,6 +1128,7 @@
       "date": "2026-10-13 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/9e4c367a-d6ef-42b0-b54f-f1b00907c7ed",
       "attachmentName": "timbro_circ n.   uscita didattica- cinema 19.10.26.pdf"
     },
@@ -1116,6 +1140,7 @@
       "date": "2026-10-13 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/860f5279-bd74-4200-99ab-8d9cfcb80a22",
       "attachmentName": "timbro_cir. convegno Gela e il mare.pdf"
     },
@@ -1127,6 +1152,7 @@
       "date": "2026-10-12 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/fe32eeac-35f4-44b1-875a-8d005bbc246c",
       "attachmentName": "circ-072_orario-provvisorio_2026-10-12_aggiustamenti_timbro.pdf"
     },
@@ -1138,6 +1164,7 @@
       "date": "2026-10-10 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/addd3731-0765-482c-a91d-bd5e49191ce2",
       "attachmentName": "circ-071_orario-provvisorio_2026-10-12_timbro.pdf"
     },
@@ -1149,6 +1176,7 @@
       "date": "2026-10-08 00:00:00",
       "subject": "COMUNICAZIONI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": null,
       "attachmentName": null
     },
@@ -1160,6 +1188,7 @@
       "date": "2026-10-07 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/36419d79-5af0-4eb8-ba0e-4196ee733f7b",
       "attachmentName": "circ-065_assemblea-sindacale-tecnologico_timbro.pdf"
     },
@@ -1171,6 +1200,7 @@
       "date": "2026-10-07 00:00:00",
       "subject": "COMUNICAZIONI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": null,
       "attachmentName": null
     },
@@ -1182,6 +1212,7 @@
       "date": "2026-10-07 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/4a6ab4d4-c30a-4d0e-bcce-38c5093893db",
       "attachmentName": "timbro_c.d.c.ottobre 2026.pdf"
     },
@@ -1193,6 +1224,7 @@
       "date": "2026-10-07 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/4a2c30f0-0fda-41d0-910d-f389c0f514ca",
       "attachmentName": "timbro_Circolare 63 Assemblea ANIEF.pdf"
     },
@@ -1204,6 +1236,7 @@
       "date": "2026-10-07 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/aab6e14e-e07d-4a42-9dd0-6b78622e6360",
       "attachmentName": "_timbro_organizzazione attivitÃ  didattica Sturzo assemblea sindacale anief.pdf"
     },
@@ -1215,6 +1248,7 @@
       "date": "2026-10-07 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/e281513a-68c1-4d6c-8ecb-b3b4c174396c",
       "attachmentName": "_timbro_circ consegna liberatorie.pdf"
     },
@@ -1226,6 +1260,7 @@
       "date": "2026-10-06 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/0af7d198-6bc4-4c23-bd04-271b980445cc",
       "attachmentName": "circ-060_orario-provvisorio_2026-10-05_precisazione-itp_timbro.pdf"
     },
@@ -1237,6 +1272,7 @@
       "date": "2026-10-06 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/260e7a2e-d803-48de-94fa-9849d897d2ce",
       "attachmentName": "timbro_Partecipazione degli studenti dei corsi serali allincontro informativo e formativo Prevenzione e Sicurezza nel lavoro di cura  9 .pdf"
     },
@@ -1248,6 +1284,7 @@
       "date": "2026-10-06 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/9721d442-171e-4a9a-912c-2eb445300e03",
       "attachmentName": "circ n.58 sospensione attivita didattiche  per interruzione erogazione energia elettrica.pdf"
     },
@@ -1259,6 +1296,7 @@
       "date": "2026-10-05 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/d4759955-5b74-4bd5-8b2d-18f52ca21e15",
       "attachmentName": "circ-057_orario-provvisorio_2026-10-05_timbro.pdf"
     },
@@ -1270,6 +1308,7 @@
       "date": "2026-10-05 00:00:00",
       "subject": "COMUNICAZIONI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/fe34f1a2-01c0-432e-a2d3-2d351ddb795c",
       "attachmentName": "LISTA_CANDIDATI_ Alunni_C.di.I..docx"
     },
@@ -1281,6 +1320,7 @@
       "date": "2026-10-05 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/8bf1abb3-2a43-49e0-b9a3-cb2fc83014ce",
       "attachmentName": "timbro elezioni alunni e genitori 27.pdf"
     },
@@ -1292,6 +1332,7 @@
       "date": "2026-10-05 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/ee64bfe3-acf6-4e81-9f36-2d7f98e38c87",
       "attachmentName": "timbro_circ n.54  sospensione attivita_ didattiche  per interruzione erogazione energia elettrica .pdf"
     },
@@ -1303,6 +1344,7 @@
       "date": "2026-10-03 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/e2cdf02b-efd7-4ea1-96d6-fe22d2def36a",
       "attachmentName": "timbro_Circolare n.53 Cancello principale ingresso via Liszt.pdf"
     },
@@ -1314,6 +1356,7 @@
       "date": "2026-10-03 00:00:00",
       "subject": "COMUNICAZIONI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": null,
       "attachmentName": null
     },
@@ -1325,6 +1368,7 @@
       "date": "2026-10-02 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/d910aa98-8d46-4235-9886-1c67ff19e9c9",
       "attachmentName": "circ-052_orario-provvisorio_2026-09-28_timbro.pdf"
     },
@@ -1336,6 +1380,7 @@
       "date": "2026-10-02 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/5a121532-e7a6-4e93-8cd7-3ef21175c593",
       "attachmentName": "timbro_organizzazione  assemblea sindacale -del 05.10-26 -.pdf"
     },
@@ -1347,6 +1392,7 @@
       "date": "2026-10-02 00:00:00",
       "subject": "COMUNICAZIONI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": null,
       "attachmentName": null
     },
@@ -1358,6 +1404,7 @@
       "date": "2026-10-02 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/ef6c66e0-834a-4c8e-b6ad-bc70e38b61f2",
       "attachmentName": "timbro_Circolare n 50  Uscita ore 11 per mancanza energia elettrica.pdf"
     },
@@ -1369,6 +1416,7 @@
       "date": "2026-10-02 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/13eeb5d2-0044-48fe-ba23-fda0fe116a93",
       "attachmentName": "timbro_Circolare 49 Variazioni assetto aule istituto.pdf"
     },
@@ -1380,6 +1428,7 @@
       "date": "2026-10-01 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/c6525c06-9ad4-4f91-b81a-0cc148218a33",
       "attachmentName": "_timbro_circolare uscita didattica orientamento catania 47.pdf"
     },
@@ -1391,6 +1440,7 @@
       "date": "2026-09-30 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/09/2dc405e9-b7a5-400c-88ec-4f5ef6784285",
       "attachmentName": "timbro_circolare.pdf"
     },
@@ -1402,6 +1452,7 @@
       "date": "2026-09-29 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/09/b704aa6d-4ef9-4b1f-8af7-ed4eec85d337",
       "attachmentName": "timbro_Circolare 43 Cambio aule.pdf"
     },
@@ -1413,6 +1464,7 @@
       "date": "2026-09-28 00:00:00",
       "subject": "COMUNICAZIONI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/09/e654a85d-8882-4a76-adf0-e4826fefa910",
       "attachmentName": "orario-provvisorio_diurno_2026-09-28_adattamento_timbro.pdf"
     },
@@ -1424,6 +1476,7 @@
       "date": "2026-09-28 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/09/be58be25-c034-48ea-8b29-d0ad18537657",
       "attachmentName": "circ-041_orario-provvisorio_2026-09-28_adattamento_timbro.pdf"
     },
@@ -1435,6 +1488,7 @@
       "date": "2026-09-28 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/09/37afeae6-2e42-4232-9621-470cb6940893",
       "attachmentName": "timbro_orario ricreazione.pdf"
     },
@@ -1446,6 +1500,7 @@
       "date": "2026-09-26 00:00:00",
       "subject": "CIRCOLARI",
       "read": false,
+      "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/09/96867551-0722-4e59-b19b-1d710d7f9af0",
       "attachmentName": "timbro_ORARIO DOCENTI SEDE CARCERARIA PROVVISORIO.pdf"
     }
