@@ -282,7 +282,7 @@ def build_voto_data(data: dict[str, list[Any] | None], stats: dict[str, Any]) ->
             "delays": ritardi,
             "earlyExits": uscite,
             "annualHours": 990,
-            "absenceLimitHours": 247.5,
+            "absenceLimitHours": 264,
         },
     }
 
