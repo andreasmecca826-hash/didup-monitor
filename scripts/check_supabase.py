@@ -32,10 +32,14 @@ if not service_key:
     raise SystemExit(2)
 print("service_role_key_present=true")
 
+auth_headers = {"apikey": service_key}
+if service_key.count(".") == 2 and not service_key.startswith(("sb_secret_", "sb_publishable_")):
+    auth_headers["Authorization"] = f"Bearer {service_key}"
+
 try:
     response = requests.get(
         f"{candidate.rstrip('/')}/storage/v1/bucket",
-        headers={"apikey": service_key, "Authorization": f"Bearer {service_key}"},
+        headers=auth_headers,
         timeout=15,
     )
 except requests.RequestException as exc:

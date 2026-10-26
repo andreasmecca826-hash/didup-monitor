@@ -129,6 +129,14 @@ def circular_is_recent(value: str) -> bool:
     return parsed is None or parsed >= datetime.now(timezone.utc).date() - timedelta(days=CIRCULAR_RETENTION_DAYS)
 
 
+def supabase_auth_headers(api_key: str) -> dict[str, str]:
+    """Usa le secret keys nuove solo come apikey e i JWT legacy anche come Bearer."""
+    headers = {"apikey": api_key}
+    if api_key.count(".") == 2 and not api_key.startswith(("sb_secret_", "sb_publishable_")):
+        headers["Authorization"] = f"Bearer {api_key}"
+    return headers
+
+
 def upload_circular_pdf(pdf_bytes: bytes) -> str:
     """Carica un PDF nel bucket privato usando solo credenziali server-side."""
     if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
@@ -142,15 +150,15 @@ def upload_circular_pdf(pdf_bytes: bytes) -> str:
         raise ValueError("Il contenuto scaricato non è un PDF valido")
     digest = hashlib.sha256(pdf_bytes).hexdigest()
     path = f"circulars/{digest}.pdf"
+    headers = supabase_auth_headers(SUPABASE_SERVICE_ROLE_KEY)
+    headers.update({
+        "Content-Type": "application/pdf",
+        "Cache-Control": "private, max-age=31536000, immutable",
+        "x-upsert": "true",
+    })
     response = requests.post(
         f"{SUPABASE_URL}/storage/v1/object/{SUPABASE_STORAGE_BUCKET}/{path}",
-        headers={
-            "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
-            "apikey": SUPABASE_SERVICE_ROLE_KEY,
-            "Content-Type": "application/pdf",
-            "Cache-Control": "private, max-age=31536000, immutable",
-            "x-upsert": "true",
-        },
+        headers=headers,
         data=pdf_bytes,
         timeout=60,
     )
