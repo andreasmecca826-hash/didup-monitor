@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-26T09:37:36.300175+00:00",
+  "updatedAt": "2026-10-26T09:52:40.729080+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -61,6 +61,17 @@
     }
   ],
   "notifications": [
+    {
+      "id": "h:e34443f22d06d6bd",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Elezioni rinnovo componente alunni e genitori consigli di classe e componente alunni consiglio d'Istituto",
+      "date": "2026-10-26 00:00:00",
+      "subject": "COMUNICAZIONI",
+      "read": false,
+      "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/e7fe03f5-b4b8-402b-bd17-f919bf5b5f97",
+      "attachmentName": "comunicazione elezioni.pdf"
+    },
     {
       "id": "h:bf5c2147601d9366",
       "type": "notice",

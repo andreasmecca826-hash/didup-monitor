@@ -29,3 +29,7 @@ Eventi registrati automaticamente dal monitor.
 ## 2026-10-26 09:22 UTC
 
 - **Bacheca DidUP** — Nuova comunicazione — Data: 2026-10-26 — Assemblea d'Istituto martedì 27.10.2026
+
+## 2026-10-26 09:52 UTC
+
+- **Bacheca DidUP** — Nuova comunicazione — Data: 2026-10-26 — Elezioni rinnovo componente alunni e genitori consigli di classe e componente alunni consiglio d'Istituto
