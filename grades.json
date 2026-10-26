@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-26T11:07:34.998152+00:00",
+  "updatedAt": "2026-10-26T11:13:34.517325+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -1665,6 +1665,6 @@
     "delays": 1,
     "earlyExits": 0,
     "annualHours": 990,
-    "absenceLimitHours": 247.5
+    "absenceLimitHours": 264
   }
 }
