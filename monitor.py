@@ -172,7 +172,11 @@ def download_circulars(didup: Any, items: list[Any]) -> dict[str, dict[str, str]
                 log.info("Circolare acquisita nello storage interno")
             except Exception as exc:
                 # Non registrare URL, nome o percorso dell'allegato nei log.
-                log.error("Download/upload circolare fallito (%s)", type(exc).__name__)
+                status = getattr(getattr(exc, "response", None), "status_code", None)
+                if status is not None:
+                    log.error("Download/upload circolare fallito (HTTP %s)", status)
+                else:
+                    log.error("Download/upload circolare fallito (%s)", type(exc).__name__)
             break
     return downloaded
 
