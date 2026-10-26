@@ -37,3 +37,7 @@ Eventi registrati automaticamente dal monitor.
 ## 2026-10-26 10:43 UTC
 
 - **22 novità su DidUP (compiti)** — Apri il registro per i dettagli.
+
+## 2026-10-26 21:52 UTC
+
+- **Bacheca DidUP** — Nuova comunicazione — Data: 2026-10-26 — Elezioni rappresentanti di classe corsi serali ITE e ITT Plesso Morselli

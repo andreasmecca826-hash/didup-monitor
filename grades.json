@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-26T21:37:39.796839+00:00",
+  "updatedAt": "2026-10-26T21:52:37.267044+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -844,6 +844,18 @@
     }
   ],
   "notifications": [
+    {
+      "id": "h:a1c03d3b507db787",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Elezioni rappresentanti di classe corsi serali ITE e ITT Plesso Morselli",
+      "date": "2026-10-26 00:00:00",
+      "subject": "CIRCOLARI",
+      "read": false,
+      "attachmentPath": null,
+      "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/76022d1c-4ef8-4e43-9396-3f9cc1391b8f",
+      "attachmentName": "elezioni serale Morselli.pdf"
+    },
     {
       "id": "h:e34443f22d06d6bd",
       "type": "notice",
