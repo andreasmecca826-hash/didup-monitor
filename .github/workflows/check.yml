@@ -8,6 +8,11 @@ on:
         required: false
         type: boolean
         default: false
+      app_trigger:
+        description: "Avvio richiesto dal pulsante VOTO (con protezione anti-duplicati)"
+        required: false
+        type: boolean
+        default: false
       supabase_readonly_check:
         description: "Verifica Supabase e bucket senza aprire circolari o modificare dati"
         required: false
@@ -20,6 +25,7 @@ on:
         default: false
 
 permissions:
+  actions: read
   contents: write
 
 concurrency:
@@ -37,23 +43,52 @@ jobs:
         with:
           ref: ${{ github.ref_name }}
 
+      - name: Salta richieste VOTO duplicate o troppo ravvicinate
+        id: app_trigger_guard
+        if: ${{ inputs.app_trigger }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+          CURRENT_RUN_ID: ${{ github.run_id }}
+        run: |
+          runs="$(curl -fsSL \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            "https://api.github.com/repos/$REPOSITORY/actions/workflows/check.yml/runs?branch=$BRANCH&per_page=10")"
+          should_skip="$(jq -r --arg run_id "$CURRENT_RUN_ID" --arg branch "$BRANCH" '
+            [.workflow_runs[]
+              | select((.id | tostring) != $run_id)
+              | select(.event == "workflow_dispatch" and .head_branch == $branch)
+              | select(.status != "completed" or ((now - (.created_at | fromdate)) < 900))
+            ] | length > 0
+          ' <<< "$runs")"
+          if [ "$should_skip" = "true" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Richiesta VOTO saltata: esiste un controllo recente o in corso."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Setup Python
+        if: ${{ steps.app_trigger_guard.outputs.skip != 'true' }}
         uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
       - name: Cache Chromium Playwright
-        if: ${{ !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata }}
+        if: ${{ !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata && steps.app_trigger_guard.outputs.skip != 'true' }}
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-1.64.1-chromium
 
       - name: Installa dipendenze
+        if: ${{ steps.app_trigger_guard.outputs.skip != 'true' }}
         run: python -m pip install "didupwrapper>=0.1.1,<0.2" requests
 
       - name: Installa browser per l'acquisizione automatica delle nuove circolari
-        if: ${{ !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata }}
+        if: ${{ !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata && steps.app_trigger_guard.outputs.skip != 'true' }}
         run: |
           python -m pip install "playwright==1.64.1"
           python -m playwright install --only-shell chromium
@@ -75,7 +110,7 @@ jobs:
         run: python scripts/repair_latest_circular_path.py
 
       - name: Inizializza file di stato se mancanti
-        if: ${{ !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata }}
+        if: ${{ !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata && steps.app_trigger_guard.outputs.skip != 'true' }}
         run: |
           if [ ! -f state.json ]; then
             echo '{}' > state.json
@@ -90,7 +125,7 @@ jobs:
           fi
 
       - name: Esegui monitor
-        if: ${{ !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata }}
+        if: ${{ !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata && steps.app_trigger_guard.outputs.skip != 'true' }}
         env:
           DIDUP_SCHOOL: ${{ secrets.CODICE_SCUOLA }}
           DIDUP_USER: ${{ secrets.USERNAME }}
@@ -105,7 +140,7 @@ jobs:
         run: python monitor.py
 
       - name: Salva JSON e storico nel repository
-        if: ${{ always() && !inputs.supabase_readonly_check }}
+        if: ${{ always() && !inputs.supabase_readonly_check && steps.app_trigger_guard.outputs.skip != 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
