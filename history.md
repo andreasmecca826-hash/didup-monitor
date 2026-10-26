@@ -11,3 +11,9 @@ Eventi registrati automaticamente dal monitor.
 - **Nuovi compiti** — EDUCAZIONE CIVICA — Data: 2026-10-26 — []
 - **Nuovi compiti** — EDUCAZIONE CIVICA — Data: 2026-10-26 — []
 - **Nuovi compiti** — EDUCAZIONE CIVICA — Data: 2026-10-26 — []
+
+## 2026-10-26 07:37 UTC
+
+- **Assenza** — 2026-10-26 00:00:00 — Assenza
+- **Nuovi compiti** — TECNOLOGIE E TECNICHE DI RAPPRESENTAZIONE GRAFICA — Data: 2026-10-26 — []
+- **Nuovi compiti** — LABORATORIO TTRG — Data: 2026-10-26 — []

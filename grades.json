@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-26T07:22:54.274052+00:00",
+  "updatedAt": "2026-10-26T07:37:35.062378+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -25,9 +25,16 @@
       "completed": false
     },
     {
-      "id": "h:3e0feec12f11b63c",
+      "id": "h:1767a78d03b0a126",
       "title": "[]",
       "subject": "TECNOLOGIE E TECNICHE DI RAPPRESENTAZIONE GRAFICA",
+      "dueDate": "2026-10-26",
+      "completed": false
+    },
+    {
+      "id": "h:bace094028f54f2b",
+      "title": "[]",
+      "subject": "LABORATORIO TTRG",
       "dueDate": "2026-10-26",
       "completed": false
     },
@@ -841,8 +848,8 @@
     }
   ],
   "attendance": {
-    "absenceDays": 14,
-    "absenceHours": 84,
+    "absenceDays": 15,
+    "absenceHours": 90,
     "delays": 1,
     "earlyExits": 0,
     "annualHours": 990,
