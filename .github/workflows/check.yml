@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       open_latest_circular:
-        description: "Test singolo: apri l'allegato della circolare più recente nella Bacheca"
+        description: "Forza manualmente una nuova apertura dell'ultima circolare, anche se già acquisita"
         required: false
         type: boolean
         default: false
@@ -43,7 +43,7 @@ jobs:
           python-version: "3.12"
 
       - name: Cache Chromium Playwright
-        if: ${{ inputs.open_latest_circular && !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata }}
+        if: ${{ !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata }}
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
@@ -52,8 +52,8 @@ jobs:
       - name: Installa dipendenze
         run: python -m pip install "didupwrapper>=0.1.1,<0.2" requests
 
-      - name: Installa browser per il test singolo
-        if: ${{ inputs.open_latest_circular && !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata }}
+      - name: Installa browser per l'acquisizione automatica delle nuove circolari
+        if: ${{ !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata }}
         run: |
           python -m pip install "playwright==1.64.1"
           python -m playwright install --only-shell chromium
@@ -100,7 +100,8 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           SUPABASE_STORAGE_BUCKET: circulars
-          BROWSER_PROBE_LATEST: ${{ inputs.open_latest_circular && !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata }}
+          BROWSER_AUTO_DOWNLOAD_NEW: ${{ !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata }}
+          BROWSER_FORCE_LATEST: ${{ inputs.open_latest_circular && !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata }}
         run: python monitor.py
 
       - name: Salva JSON e storico nel repository

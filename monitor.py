@@ -272,49 +272,79 @@ def click_bacheca_attachment(page: Any, item: Any, allegato: Any) -> bytes:
     raise RuntimeError("Il click dalla Bacheca non ha restituito un PDF")
 
 
-def download_circulars(didup: Any, items: list[Any]) -> dict[str, dict[str, str]]:
-    """Prova esplicita, singola, dell'apertura in Bacheca; non gira nei run ordinari."""
-    downloaded: dict[str, dict[str, str]] = {}
-    if os.environ.get("BROWSER_PROBE_LATEST", "").lower() != "true":
-        return downloaded
-    from playwright.sync_api import sync_playwright
+def circular_browser_token(item: Any) -> str:
+    identity = item_key(item, ("prg_messaggio", "prg_bacheca", "prg", "id"))
+    return hashlib.sha256(identity.encode("utf-8")).hexdigest()
 
-    candidates = [
-        (item, (getattr(item, "lista_allegati", None) or [])[:1])
-        for item in items
-        if circular_is_recent(first_attr(item, ("dat_giorno", "dat_evento", "data")))
-    ]
-    candidates = [(item, allegati) for item, allegati in candidates if allegati]
+
+def download_circulars(didup: Any, items: list[Any]) -> dict[str, dict[str, str]]:
+    """Acquisisce una volta gli allegati delle nuove circolari, senza presa visione."""
+    downloaded: dict[str, dict[str, str]] = {}
+    automatic = os.environ.get("BROWSER_AUTO_DOWNLOAD_NEW", "").lower() == "true"
+    force_latest = os.environ.get("BROWSER_FORCE_LATEST", "").lower() == "true"
+    if not automatic and not force_latest:
+        return downloaded
+
+    candidates: list[tuple[Any, Any, str]] = []
+    for item in items:
+        if not circular_is_recent(first_attr(item, ("dat_giorno", "dat_evento", "data"))):
+            continue
+        allegati = getattr(item, "lista_allegati", None) or []
+        if allegati:
+            candidates.append((item, allegati[0], circular_browser_token(item)))
     candidates.sort(
         key=lambda pair: parse_date(first_attr(pair[0], ("dat_giorno", "dat_evento", "data"))) or date.min,
-        reverse=True,
     )
+
+    state = load_state()
+    state_key = "_circular_browser_seen"
+    if state_key not in state or not isinstance(state.get(state_key), list):
+        # Il primo run abilita il browser senza riaprire circolari già presenti.
+        state[state_key] = sorted({token for _, _, token in candidates})
+        save_state(state)
+        log.info("Baseline circolari browser inizializzato (%d elementi già presenti)", len(state[state_key]))
+        if not force_latest:
+            return downloaded
+
+    seen = {token for token in state[state_key] if isinstance(token, str)}
+    if force_latest and candidates:
+        candidates = candidates[-1:]
+    else:
+        candidates = [candidate for candidate in candidates if candidate[2] not in seen]
     if not candidates:
         return downloaded
-    item, allegati = candidates[0]
-    allegato = allegati[0]
+
+    from playwright.sync_api import sync_playwright
 
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=True)
         context = browser.new_context(accept_downloads=True)
         page = context.new_page()
         try:
-            login_browser(page)
-            open_bacheca(page)
             try:
-                pdf_bytes = click_bacheca_attachment(page, item, allegato)
-                path = upload_circular_pdf(pdf_bytes)
-                key = item_key(item, ("prg_messaggio", "prg_bacheca", "prg", "id"))
-                entry = {"path": path, "name": first_attr(allegato, ("nome_file", "descrizione_file"), "circolare.pdf")}
-                downloaded[key] = entry
-                downloaded[f"object:{id(item)}"] = entry
-                log.info("Circolare acquisita nello storage interno")
+                login_browser(page)
             except Exception as exc:
-                status = getattr(exc, "status", None)
-                if status is not None:
-                    log.error("Download UI Bacheca fallito (HTTP %s)", status)
-                else:
-                    log.error("Download UI Bacheca fallito (%s)", type(exc).__name__)
+                log.error("Login browser DidUP fallito (%s)", type(exc).__name__)
+                return downloaded
+            for item, allegato, token in candidates:
+                try:
+                    open_bacheca(page)
+                    pdf_bytes = click_bacheca_attachment(page, item, allegato)
+                    path = upload_circular_pdf(pdf_bytes)
+                    key = item_key(item, ("prg_messaggio", "prg_bacheca", "prg", "id"))
+                    entry = {"path": path, "name": first_attr(allegato, ("nome_file", "descrizione_file"), "circolare.pdf")}
+                    downloaded[key] = entry
+                    downloaded[f"object:{id(item)}"] = entry
+                    seen.add(token)
+                    state[state_key] = sorted(seen)
+                    save_state(state)
+                    log.info("Nuova circolare acquisita nello storage interno")
+                except Exception as exc:
+                    status = getattr(exc, "status", None)
+                    if status is not None:
+                        log.error("Download UI Bacheca fallito (HTTP %s)", status)
+                    else:
+                        log.error("Download UI Bacheca fallito (%s)", type(exc).__name__)
         finally:
             context.close()
             browser.close()
