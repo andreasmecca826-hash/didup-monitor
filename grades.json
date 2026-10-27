@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-27T17:37:39.592252+00:00",
+  "updatedAt": "2026-10-27T17:52:47.065947+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -1561,6 +1561,18 @@
       "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/09/37afeae6-2e42-4232-9621-470cb6940893",
       "attachmentName": "timbro_orario ricreazione.pdf"
+    },
+    {
+      "id": "h:8c4d8ffc047e1fdf",
+      "type": "reminder",
+      "title": "Promemoria",
+      "message": "Si informano i genitori degli alunni della classe 2 I che, a causa dell'assenza ingiustificata di massa registrata in data odierna (23/10/2026), nella giornata di lunedì 26 ottobre gli studenti saranno riammessi in classe solo ed esclusivamente se accompagnati da un genitore.",
+      "date": "2026-10-23",
+      "subject": null,
+      "read": false,
+      "attachmentPath": null,
+      "attachmentUrl": null,
+      "attachmentName": null
     }
   ],
   "attendance": {
