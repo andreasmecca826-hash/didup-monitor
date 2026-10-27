@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-26T22:52:45.464434+00:00",
+  "updatedAt": "2026-10-27T05:07:36.917724+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -1515,18 +1515,6 @@
       "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/09/37afeae6-2e42-4232-9621-470cb6940893",
       "attachmentName": "timbro_orario ricreazione.pdf"
-    },
-    {
-      "id": "h:b506d834407877ba",
-      "type": "notice",
-      "title": "Comunicazione",
-      "message": "ORARIO PROVVISORIO DOCENTI SOSTEGNO E SEDE CARCERARIA",
-      "date": "2026-09-26 00:00:00",
-      "subject": "CIRCOLARI",
-      "read": false,
-      "attachmentPath": null,
-      "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/09/96867551-0722-4e59-b19b-1d710d7f9af0",
-      "attachmentName": "timbro_ORARIO DOCENTI SEDE CARCERARIA PROVVISORIO.pdf"
     }
   ],
   "attendance": {
