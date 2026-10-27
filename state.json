@@ -53,9 +53,9 @@
   ],
   "_stats": {
     "massimo": 6.5,
-    "media": 6.5,
-    "minimo": 6.5,
-    "num_voti": 1
+    "media": 6.25,
+    "minimo": 6.0,
+    "num_voti": 2
   },
   "assenze": [
     "dat_evento:2026-09-17 00:00:00",
@@ -388,6 +388,7 @@
     "h:8c4d8ffc047e1fdf"
   ],
   "voti": [
-    "h:4b1fb88b90e735f1"
+    "h:4b1fb88b90e735f1",
+    "h:d1914c7cc01d8453"
   ]
 }

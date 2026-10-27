@@ -45,3 +45,8 @@ Eventi registrati automaticamente dal monitor.
 ## 2026-10-26 22:07 UTC
 
 - **Bacheca DidUP** — Nuova comunicazione — Data: 2026-10-26 — Elezioni rappresentanti alunni e assemblea di istituto corso serale Alberghiero
+
+## 2026-10-27 07:37 UTC
+
+- **Nuovo voto** — MATEMATICA: 6 — 📊 Media generale: 6.25 ⬇️ (-0.25)
+- **Media aggiornata** — 📊 Media generale: 6.25 ⬇️ (-0.25)

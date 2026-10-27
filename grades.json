@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-27T07:22:43.704968+00:00",
+  "updatedAt": "2026-10-27T07:37:38.581860+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -12,6 +12,20 @@
           "type": "orale",
           "weight": 1,
           "comment": "sei e mezzo"
+        }
+      ]
+    },
+    {
+      "id": "matematica",
+      "name": "MATEMATICA",
+      "grades": [
+        {
+          "id": "1",
+          "value": "6",
+          "date": "2026-10-27",
+          "type": "orale",
+          "weight": 1,
+          "comment": "sei"
         }
       ]
     }
