@@ -494,11 +494,36 @@ def build_voto_data(
     ritardi = sum(first_attr(evento, ("cod_evento",)).upper() == "I" for evento in eventi)
     uscite = sum(first_attr(evento, ("cod_evento",)).upper() == "U" for evento in eventi)
     notifications = []
-    for section, kind, title_default in (("note", "note", "Nota disciplinare"), ("bacheca", "bacheca", "Comunicazione")):
-        for index, item in enumerate(data.get(section) or []):
-            title = first_attr(item, ("des_oggetto", "oggetto", "titolo", "des_titolo"), title_default)
-            message = first_attr(item, ("des_messaggio", "messaggio", "testo", "des_testo", "nota", "descrizione"))
-            event_date = first_attr(item, ("dat_giorno", "dat_evento", "data"))
+    notification_sections = (
+        ("note", "note", "Nota disciplinare"),
+        ("bacheca", "bacheca", "Comunicazione"),
+        ("promemoria", "reminder", "Promemoria"),
+    )
+    for section, kind, title_default in notification_sections:
+        # None significa che DidUP non ha restituito la sezione; [] significa
+        # invece che il controllo è riuscito e non ci sono elementi.
+        items = data.get(section)
+        if items is None:
+            continue
+        for index, item in enumerate(items):
+            title_fields = (
+                ("des_oggetto", "oggetto", "titolo", "des_titolo")
+                if kind != "reminder"
+                else ("des_oggetto", "des_titolo", "oggetto", "titolo", "des_tipo")
+            )
+            message_fields = (
+                ("des_messaggio", "messaggio", "testo", "des_testo", "nota", "descrizione")
+                if kind != "reminder"
+                else ("des_annotazioni", "des_promemoria", "des_testo", "testo", "messaggio", "annotazioni", "descrizione")
+            )
+            date_fields = (
+                ("dat_giorno", "dat_evento", "data")
+                if kind != "reminder"
+                else ("dat_giorno", "dat_promemoria", "dat_evento", "data")
+            )
+            title = first_attr(item, title_fields, title_default)
+            message = first_attr(item, message_fields)
+            event_date = first_attr(item, date_fields)
             if kind == "bacheca" and not circular_is_recent(event_date):
                 continue
             attachment_url = first_attr(item, ("url", "des_url"))
@@ -514,7 +539,12 @@ def build_voto_data(
                 else:
                     attachment_url = allegato_path or allegato_url or attachment_url
                 attachment_name = attachment_name or first_attr(allegato, ("nome_file", "descrizione_file"))
-            item_id = item_key(item, ("prg_messaggio", "prg_bacheca", "prg", "id")) or f"{kind}-{index}"
+            id_fields = (
+                ("prg_messaggio", "prg_bacheca", "prg", "id")
+                if kind != "reminder"
+                else ("prg_promemoria", "prg_promemoria_alunno", "prg", "id")
+            )
+            item_id = item_key(item, id_fields) or f"{kind}-{index}"
             files = circular_files or {}
             local_file = files.get(f"object:{id(item)}") or files.get(item_id)
             attachment_path = local_file["path"] if local_file else None
@@ -523,11 +553,11 @@ def build_voto_data(
                 attachment_name = local_file["name"]
             notifications.append({
                 "id": item_id,
-                "type": "note" if kind == "note" else "notice",
+                "type": "note" if kind == "note" else "reminder" if kind == "reminder" else "notice",
                 "title": title,
                 "message": message or None,
                 "date": event_date or None,
-                "subject": first_attr(item, ("categoria", "category", "des_categoria")) or None,
+                "subject": first_attr(item, ("categoria", "category", "des_categoria", "des_materia", "materia")) or None,
                 "read": False,
                 "attachmentPath": attachment_path,
                 "attachmentUrl": attachment_url or None,
@@ -587,6 +617,22 @@ def save_voto_data(
     output = Path(os.environ.get("VOTO_FILE") or "grades.json")
     payload = build_voto_data(data, stats, circular_files)
     previous_by_id, previous_by_url = existing_circular_paths(output)
+    if data.get("promemoria") is None and output.exists():
+        # Non cancellare promemoria già mostrati se DidUP non ha risposto:
+        # una lista vuota, al contrario, indica un controllo riuscito.
+        try:
+            previous = json.loads(output.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            previous = {}
+        old_notifications = previous.get("notifications", []) if isinstance(previous, dict) else []
+        if isinstance(old_notifications, list):
+            known_ids = {str(item.get("id")) for item in payload["notifications"] if isinstance(item, dict)}
+            payload["notifications"].extend(
+                item for item in old_notifications
+                if isinstance(item, dict)
+                and item.get("type") == "reminder"
+                and str(item.get("id")) not in known_ids
+            )
     preserved = 0
     for item in payload["notifications"]:
         if not isinstance(item, dict) or item.get("attachmentPath"):
