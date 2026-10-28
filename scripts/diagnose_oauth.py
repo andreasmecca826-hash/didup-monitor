@@ -10,9 +10,10 @@ import json
 import logging
 import os
 import sys
+import asyncio
 from http.cookies import SimpleCookie
 from html.parser import HTMLParser
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 import httpx
 from didupwrapper import DiDUPClientSync
@@ -138,14 +139,25 @@ def _safe_consent_metadata(response: httpx.Response) -> dict[str, object]:
 
 
 def _test_browser_login() -> dict[str, object]:
-    """Verifica solo il login web usato dal monitor per le circolari."""
+    """Verifica il login web e prova OAuth PKCE nella stessa sessione browser."""
     browser = None
     try:
         from playwright.sync_api import sync_playwright
+        from didupwrapper import DiDUPClientSync
+        from didupwrapper.auth import Autenticatore, Credenziali
 
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=True)
             page = browser.new_page()
+            callback_urls: list[str] = []
+            callback_uri = "it.argosoft.didup.famiglia.new://login-callback"
+
+            def capture_callback(request: object) -> None:
+                request_url = getattr(request, "url", "")
+                if isinstance(request_url, str) and request_url.startswith(callback_uri):
+                    callback_urls.append(request_url)
+
+            page.on("request", capture_callback)
             page.goto(
                 "https://www.portaleargo.it/famiglia",
                 wait_until="domcontentloaded",
@@ -160,7 +172,76 @@ def _test_browser_login() -> dict[str, object]:
             password_field = page.locator("#password")
             if password_field.count() and password_field.is_visible():
                 return {"ok": False, "reason": "web_login_not_completed"}
-            return {"ok": True, "stage": "portal_web_login"}
+
+            authenticator = Autenticatore(
+                Credenziali(
+                    os.environ["DIDUP_SCHOOL"],
+                    os.environ["DIDUP_USER"],
+                    os.environ["DIDUP_PASSWORD"],
+                )
+            )
+            link = authenticator._genera_login_link()
+            try:
+                page.goto(link.url, wait_until="domcontentloaded", timeout=45_000)
+            except Exception:
+                # Il callback mobile può causare ERR_UNKNOWN_URL_SCHEME in Chromium.
+                pass
+            page.wait_for_timeout(3_000)
+
+            if page.locator("#codiceScuola").count():
+                page.locator("#codiceScuola").fill(os.environ["DIDUP_SCHOOL"])
+                page.locator("#username").fill(os.environ["DIDUP_USER"])
+                page.locator("#password").fill(os.environ["DIDUP_PASSWORD"])
+                page.locator("#accediBtn").click()
+                page.wait_for_timeout(5_000)
+
+            candidate_urls = callback_urls + [page.url]
+            code = None
+            for candidate in candidate_urls:
+                parsed = urlsplit(candidate)
+                if parsed.scheme == "it.argosoft.didup.famiglia.new":
+                    code = parse_qs(parsed.query).get("code", [None])[0]
+                    if code:
+                        break
+
+            if not code:
+                page_parser = ConsentMetadataParser()
+                try:
+                    page_parser.feed(page.content())
+                except Exception:
+                    pass
+                return {
+                    "ok": True,
+                    "stage": "portal_web_login",
+                    "oauth_browser_callback": False,
+                    "oauth_page_categories": page_parser.page_categories(),
+                    "oauth_forms": page_parser.forms[:8],
+                    "oauth_button_keywords": sorted(page_parser.button_keywords),
+                }
+
+            async def exchange_code() -> str:
+                async with httpx.AsyncClient(follow_redirects=False, timeout=30.0) as http:
+                    token = await authenticator._ottieni_token(http, link, code)
+                    return token.access_token
+
+            access_token = asyncio.run(exchange_code())
+            api_client = DiDUPClientSync(
+                os.environ["DIDUP_SCHOOL"],
+                os.environ["DIDUP_USER"],
+                os.environ["DIDUP_PASSWORD"],
+                access_token=access_token,
+                auto_versione=True,
+            )
+            try:
+                api_client.login()
+            finally:
+                api_client.close()
+            return {
+                "ok": True,
+                "stage": "didup_api_login",
+                "oauth_browser_callback": True,
+                "token_exchange": True,
+            }
     except Exception as exc:
         reason = "web_login_timeout" if "timeout" in type(exc).__name__.casefold() else "web_login_failed"
         return {"ok": False, "reason": reason, "error_type": type(exc).__name__}
