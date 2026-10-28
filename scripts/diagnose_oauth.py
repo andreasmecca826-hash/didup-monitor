@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verifica il login DidUP usato dal monitor senza scaricare o modificare dati."""
+"""Verifica il login e le API DidUP in sola lettura, senza persistenza o notifiche."""
 from __future__ import annotations
 
 import json
@@ -31,8 +31,9 @@ def main() -> int:
         )
         return 2
 
-    original_sections = monitor.SECTIONS
     original_browser_fallback = monitor.browser_oauth_access_token
+    original_download_circulars = monitor.download_circulars
+    original_log_disabled = monitor.log.disabled
     fallback_calls = 0
 
     def observed_fallback(school_arg: str, user_arg: str, password_arg: str) -> str:
@@ -41,30 +42,37 @@ def main() -> int:
         return original_browser_fallback(school_arg, user_arg, password_arg)
 
     try:
-        # Nessun metodo di download viene chiamato e non si toccano file o notifiche.
-        monitor.SECTIONS = {}
+        # I dati restano in memoria; non si scaricano PDF, notificano o salvano file.
+        monitor.download_circulars = lambda didup, items: []
+        monitor.log.disabled = True
         monitor.browser_oauth_access_token = observed_fallback
-        monitor.fetch_all_once(school, username, password, apply_filters=True, auto=False)
+        data = monitor.fetch_all_once(school, username, password, apply_filters=True, auto=False)
+        failed_sections = [name for name in monitor.SECTIONS if data.get(name) is None]
+        ok = not failed_sections
         print(
             json.dumps(
                 {
                     "event": "didup_oauth_diagnostic",
-                    "ok": True,
-                    "stage": "production_login_and_api_session",
+                    "ok": ok,
+                    "stage": "production_readonly_data_fetch",
                     "browser_fallback_used": fallback_calls > 0,
-                    "data_sections_requested": 0,
+                    "data_sections_requested": len(monitor.SECTIONS),
+                    "failed_sections": failed_sections,
+                    "data_persisted": False,
+                    "notifications_sent": False,
+                    "circular_files_downloaded": False,
                 },
                 sort_keys=True,
             )
         )
-        return 0
+        return 0 if ok else 1
     except Exception as exc:
         print(
             json.dumps(
                 {
                     "event": "didup_oauth_diagnostic",
                     "ok": False,
-                    "stage": "production_login_and_api_session",
+                    "stage": "production_readonly_data_fetch",
                     "browser_fallback_used": fallback_calls > 0,
                     "error_type": type(exc).__name__,
                     "reason": monitor.safe_error_summary(exc),
@@ -76,8 +84,9 @@ def main() -> int:
         )
         return 1
     finally:
-        monitor.SECTIONS = original_sections
         monitor.browser_oauth_access_token = original_browser_fallback
+        monitor.download_circulars = original_download_circulars
+        monitor.log.disabled = original_log_disabled
 
 
 if __name__ == "__main__":
