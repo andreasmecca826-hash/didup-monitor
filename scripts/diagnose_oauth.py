@@ -10,6 +10,7 @@ import json
 import logging
 import os
 import sys
+from http.cookies import SimpleCookie
 from html.parser import HTMLParser
 from urllib.parse import urlsplit
 
@@ -147,6 +148,17 @@ def main() -> int:
         return 2
 
     original_request = httpx.AsyncClient.request
+    session_cookies: dict[str, str] = {}
+
+    def remember_cookies(response: httpx.Response) -> None:
+        for header in response.headers.get_list("set-cookie"):
+            parsed_cookies = SimpleCookie()
+            try:
+                parsed_cookies.load(header)
+            except Exception:
+                continue
+            for name, morsel in parsed_cookies.items():
+                session_cookies[name] = morsel.value
 
     async def inspect_request(
         self: httpx.AsyncClient,
@@ -156,11 +168,30 @@ def main() -> int:
         **kwargs: object,
     ) -> httpx.Response:
         response = await original_request(self, method, url, *args, **kwargs)
+        remember_cookies(response)
         parsed = urlsplit(str(url))
         is_portal = parsed.hostname and parsed.hostname.lower().endswith("portaleargo.it")
         is_consent_page = "/auth/sso/consent" in parsed.path
         if is_portal and is_consent_page and response.status_code == 200:
-            print(json.dumps(_safe_consent_metadata(response), ensure_ascii=False, sort_keys=True), flush=True)
+            cookie_header = "; ".join(f"{name}={value}" for name, value in session_cookies.items())
+            if cookie_header:
+                retry_kwargs = dict(kwargs)
+                retry_headers = dict(retry_kwargs.get("headers") or {})
+                retry_headers["cookie"] = cookie_header
+                retry_kwargs["headers"] = retry_headers
+                retry = await original_request(self, method, url, *args, **retry_kwargs)
+                remember_cookies(retry)
+                metadata = _safe_consent_metadata(retry)
+                metadata["retry_with_session_cookies"] = True
+                metadata["cookie_names"] = sorted(session_cookies)
+                print(json.dumps(metadata, ensure_ascii=False, sort_keys=True), flush=True)
+                if retry.status_code in (301, 302, 303, 307, 308) and retry.headers.get("location"):
+                    return retry
+            else:
+                metadata = _safe_consent_metadata(response)
+                metadata["retry_with_session_cookies"] = False
+                metadata["cookie_names"] = []
+                print(json.dumps(metadata, ensure_ascii=False, sort_keys=True), flush=True)
         return response
 
     httpx.AsyncClient.request = inspect_request  # type: ignore[method-assign]
