@@ -92,6 +92,12 @@ jobs:
         if: ${{ steps.app_trigger_guard.outputs.skip != 'true' }}
         run: python -m pip install "didupwrapper>=0.1.1,<0.2" requests
 
+      - name: Installa browser per il test login OAuth
+        if: ${{ inputs.oauth_diagnostics && steps.app_trigger_guard.outputs.skip != 'true' }}
+        run: |
+          python -m pip install "playwright==1.64.1"
+          python -m playwright install --only-shell chromium
+
       - name: Diagnostica login OAuth senza modificare dati
         if: ${{ inputs.oauth_diagnostics && steps.app_trigger_guard.outputs.skip != 'true' }}
         env:

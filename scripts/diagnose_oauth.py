@@ -137,6 +137,29 @@ def _safe_consent_metadata(response: httpx.Response) -> dict[str, object]:
     }
 
 
+def _test_browser_login() -> dict[str, object]:
+    """Verifica solo il login web usato dal monitor per le circolari."""
+    browser = None
+    try:
+        from playwright.sync_api import sync_playwright
+        from monitor import login_browser
+
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            page = browser.new_page()
+            login_browser(page)
+            return {"ok": True, "stage": "portal_web_login"}
+    except Exception as exc:
+        reason = "web_login_timeout" if "timeout" in type(exc).__name__.casefold() else "web_login_failed"
+        return {"ok": False, "reason": reason, "error_type": type(exc).__name__}
+    finally:
+        if browser is not None:
+            try:
+                browser.close()
+            except Exception:
+                pass
+
+
 def main() -> int:
     # httpx logga URL con query OAuth (state/nonce/verifier): qui li silenziamo.
     logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -223,6 +246,7 @@ def main() -> int:
             "ok": False,
             "reason": reason,
             "error_type": type(exc).__name__,
+            "browser_portal_login": _test_browser_login(),
         }
         if isinstance(code, int):
             result["status_code"] = code
