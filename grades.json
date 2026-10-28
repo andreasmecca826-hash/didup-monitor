@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-28T07:07:40.611764+00:00",
+  "updatedAt": "2026-10-28T07:22:43.780798+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -887,6 +887,14 @@
       "teacher": "S. MAROTTA",
       "hour": "4",
       "activity": "GLI ALUNNI SONO RIUNITI IN ASSEMBLEA DI ISTITUTO, COME DA CIRCOLARE NUMERO 96.\nALLE ORE 11:55 I RAGAZZI ERANO TUTTI PRESENTI AL CONTRAPPELLO."
+    },
+    {
+      "id": "pk_materia:4D632D7AC496A3BBF03B1E59A71F5704ADB848AA470E6532E81E7ED636D19D8BAA6155F96B06AC26ECEAEFBF3653515D5AF889C23E40F85F2AD9BFEEC73477FDF1134DBB840069D8F237E7EDE3099314",
+      "date": "2026-10-28",
+      "subject": "MATEMATICA",
+      "teacher": "V. RAPISARDA",
+      "hour": "1",
+      "activity": "somma e sottrazione di frazioni algebriche"
     }
   ],
   "notifications": [
