@@ -78,6 +78,8 @@ NOISY_HINTS = ("visione", "letto", "letta", "conferma", "read")
 COMPITI_FIELDS = ("compito", "des_compito", "des_compiti")
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
 log = logging.getLogger("monitor")
 
 
@@ -905,8 +907,40 @@ def process_section(
 
 
 def is_auth_error(exc: BaseException) -> bool:
-    """Credenziali rifiutate: riconosco l'AuthError di didupwrapper dal nome della classe."""
-    return type(exc).__name__ == "AuthError"
+    """True solo per un rifiuto credenziali identificabile, non per errori OAuth generici."""
+    if type(exc).__name__ != "AuthError":
+        return False
+    message = str(exc).casefold()
+    if is_oauth_flow_interrupted(exc):
+        return False
+    if "credenziali errate o flusso cambiato" in message:
+        return False
+    status = getattr(exc, "status_code", None)
+    return status in (401, 403) or "credenziali errate" in message or "invalid credentials" in message
+
+
+def is_oauth_flow_interrupted(exc: BaseException) -> bool:
+    """Riconosce un redirect/consenso mancante senza attribuirlo alla password."""
+    if type(exc).__name__ != "AuthError":
+        return False
+    message = str(exc).casefold()
+    return any(
+        marker in message
+        for marker in (
+            "catena oauth interrotta",
+            "avvio oauth:",
+            "code non presente nel redirect",
+            "redirect finale",
+        )
+    )
+
+
+def safe_error_summary(exc: BaseException) -> str:
+    """Evita di registrare URL OAuth e parametri temporanei nelle Actions logs."""
+    if type(exc).__name__ == "AuthError":
+        status = getattr(exc, "status_code", None)
+        return f"errore autenticazione OAuth (HTTP {status})" if status else "errore autenticazione OAuth"
+    return str(exc)
 
 
 def fetch_all_once(
@@ -950,17 +984,28 @@ def fetch_all(
         except Exception as exc:
             last_exc = exc
             auth = is_auth_error(exc)
-            log.warning("Tentativo %d/%d fallito (%s): %s", attempt, MAX_RETRIES, type(exc).__name__, exc)
+            log.warning(
+                "Tentativo %d/%d fallito (%s): %s",
+                attempt,
+                MAX_RETRIES,
+                type(exc).__name__,
+                safe_error_summary(exc),
+            )
+            if is_oauth_flow_interrupted(exc):
+                raise RuntimeError(
+                    "Accesso automatico interrotto nel passaggio OAuth/consenso di DidUP. "
+                    "Questo errore non indica che la password sia errata; serve adeguare il flusso di accesso."
+                ) from exc
             if auth and auto:
                 raise RuntimeError(
-                    "Credenziali rifiutate da DidUP: non riprovo. "
-                    "Controlla codice scuola, username e password nei secrets."
+                    "DidUP ha rifiutato l'autenticazione: non riprovo per evitare il blocco dell'account. "
+                    "Verifica codice scuola, username e password nei secrets."
                 ) from exc
             if attempt < MAX_RETRIES and not auth:
                 log.info("Attesa di %d secondi prima del prossimo tentativo...", RETRY_DELAY)
                 time.sleep(RETRY_DELAY)
     raise RuntimeError(
-        f"Tutti i {MAX_RETRIES} tentativi di connessione a DidUP sono falliti: {last_exc}"
+        f"Tutti i {MAX_RETRIES} tentativi di connessione a DidUP sono falliti: {safe_error_summary(last_exc)}"
     ) from last_exc
 
 
