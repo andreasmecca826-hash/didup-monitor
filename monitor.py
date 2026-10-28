@@ -20,6 +20,7 @@ Uso:
 """
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 import logging
@@ -30,10 +31,12 @@ import time
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable, NamedTuple
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
+import httpx
 import requests
 from didupwrapper import DiDUPClientSync
+from didupwrapper.auth import ArgoConfig, Autenticatore, Credenziali
 
 NTFY_TOPIC = os.environ.get("NTFY_TOPIC") or "Morselli_alerts_didup"
 NTFY_URL = "https://ntfy.sh"
@@ -57,7 +60,7 @@ MAX_CIRCULAR_BYTES = 25 * 1024 * 1024
 # Oltre questa soglia di novita' per sezione, invio un solo riepilogo
 MAX_NOTIFICHE = 10
 
-# Tentativi di login/download per ogni esecuzione (massimo 3 login in totale).
+# Tentativi per errori transitori; su OAuth interrotto si usa un solo fallback browser.
 MAX_RETRIES = 3
 RETRY_DELAY = 5  # secondi di attesa tra un tentativo e l'altro
 
@@ -185,6 +188,80 @@ def login_browser(page: Any) -> None:
     page.wait_for_timeout(5000)
     if page.locator("#password").count() and page.locator("#password").is_visible():
         raise RuntimeError("Login web DidUP non completato")
+
+
+class OAuthBrowserError(RuntimeError):
+    """Errore non ripetibile del fallback OAuth via browser."""
+
+
+def browser_oauth_access_token(school: str, username: str, password: str) -> str:
+    """Completa il callback PKCE in Chromium e scambia il codice senza esporlo."""
+    try:
+        from playwright.sync_api import sync_playwright
+    except Exception as exc:
+        raise OAuthBrowserError("Browser Playwright non disponibile per il fallback OAuth.") from exc
+
+    config = ArgoConfig()
+    authenticator = Autenticatore(Credenziali(school, username, password), config=config)
+    link = authenticator._genera_login_link()
+    callback_scheme = urlsplit(config.redirect_uri).scheme
+    callback_urls: list[str] = []
+    code: str | None = None
+
+    try:
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            try:
+                page = browser.new_page()
+
+                def capture_callback(request: Any) -> None:
+                    request_url = getattr(request, "url", "")
+                    if isinstance(request_url, str) and request_url.startswith(config.redirect_uri):
+                        callback_urls.append(request_url)
+
+                page.on("request", capture_callback)
+                login_browser(page)
+                try:
+                    page.goto(link.url, wait_until="domcontentloaded", timeout=45_000)
+                except Exception:
+                    # Chromium può rifiutare lo schema callback mobile dopo averlo intercettato.
+                    pass
+                page.wait_for_timeout(3_000)
+
+                if page.locator("#codiceScuola").count():
+                    page.locator("#codiceScuola").fill(school)
+                    page.locator("#username").fill(username)
+                    page.locator("#password").fill(password)
+                    page.locator("#accediBtn").click()
+                    page.wait_for_timeout(5_000)
+
+                for candidate in callback_urls + [page.url]:
+                    parsed = urlsplit(candidate)
+                    if parsed.scheme == callback_scheme:
+                        code = parse_qs(parsed.query).get("code", [None])[0]
+                        if code:
+                            break
+            finally:
+                browser.close()
+    except Exception as exc:
+        raise OAuthBrowserError(
+            f"Fallback OAuth browser non completato ({type(exc).__name__})."
+        ) from exc
+
+    if not code:
+        raise OAuthBrowserError("Fallback OAuth browser: DidUP non ha restituito il callback PKCE.")
+
+    async def exchange_code() -> str:
+        async with httpx.AsyncClient(follow_redirects=False, timeout=30.0) as client:
+            session = await authenticator._ottieni_token(client, link, code)
+            return session.access_token
+
+    try:
+        return asyncio.run(exchange_code())
+    except Exception as exc:
+        raise OAuthBrowserError(
+            f"Fallback OAuth browser: scambio token non completato ({type(exc).__name__})."
+        ) from exc
 
 
 def open_bacheca(page: Any) -> None:
@@ -921,6 +998,8 @@ def is_auth_error(exc: BaseException) -> bool:
 
 def is_oauth_flow_interrupted(exc: BaseException) -> bool:
     """Riconosce un redirect/consenso mancante senza attribuirlo alla password."""
+    if isinstance(exc, OAuthBrowserError):
+        return True
     if type(exc).__name__ != "AuthError":
         return False
     message = str(exc).casefold()
@@ -937,6 +1016,8 @@ def is_oauth_flow_interrupted(exc: BaseException) -> bool:
 
 def safe_error_summary(exc: BaseException) -> str:
     """Evita di registrare URL OAuth e parametri temporanei nelle Actions logs."""
+    if isinstance(exc, OAuthBrowserError):
+        return str(exc)
     if type(exc).__name__ == "AuthError":
         status = getattr(exc, "status_code", None)
         return f"errore autenticazione OAuth (HTTP {status})" if status else "errore autenticazione OAuth"
@@ -946,9 +1027,10 @@ def safe_error_summary(exc: BaseException) -> str:
 def fetch_all_once(
     school: str, user: str, password: str, apply_filters: bool, auto: bool
 ) -> dict[str, list[Any] | None]:
-    """Un solo login + download di tutte le sezioni."""
+    """Un login e download; se OAuth HTTP si interrompe, riprova una volta via browser."""
     kwargs = {"auto_versione": True} if auto else {}
-    with DiDUPClientSync(school, user, password, **kwargs) as didup:
+
+    def collect_sections(didup: DiDUPClientSync) -> dict[str, list[Any] | None]:
         out: dict[str, Any] = {}
         for name, section in SECTIONS.items():
             try:
@@ -969,13 +1051,40 @@ def fetch_all_once(
                 out[name] = None
         return out
 
+    didup: DiDUPClientSync | None = DiDUPClientSync(school, user, password, **kwargs)
+    try:
+        try:
+            didup.login()
+        except Exception as exc:
+            try:
+                didup.close()
+            except Exception:
+                log.debug("Cleanup client HTTP non riuscito dopo errore login; continuo il fallback.")
+            didup = None
+            if not is_oauth_flow_interrupted(exc):
+                raise
+            log.warning(
+                "Il redirect OAuth HTTP di DidUP si è interrotto; riprovo il login con Chromium."
+            )
+            access_token = browser_oauth_access_token(school, user, password)
+            didup = DiDUPClientSync(
+                school,
+                user,
+                password,
+                access_token=access_token,
+                auto_versione=True,
+            )
+            didup.login()
+        return collect_sections(didup)
+    finally:
+        if didup is not None:
+            didup.close()
+
 
 def fetch_all(
     school: str, user: str, password: str, apply_filters: bool = True
 ) -> dict[str, list[Any] | None]:
-    """Fino a MAX_RETRIES login. Se le credenziali vengono rifiutate si ferma subito
-    (al massimo 2 tentativi: uno con versione di default, uno con versione rilevata),
-    per non rischiare il blocco dell'account."""
+    """Riprova gli errori transitori; ferma subito auth error e fallback OAuth falliti."""
     last_exc: Exception | None = None
     for attempt in range(1, MAX_RETRIES + 1):
         auto = attempt > 1
@@ -993,8 +1102,8 @@ def fetch_all(
             )
             if is_oauth_flow_interrupted(exc):
                 raise RuntimeError(
-                    "Accesso automatico interrotto nel passaggio OAuth/consenso di DidUP. "
-                    "Questo errore non indica che la password sia errata; serve adeguare il flusso di accesso."
+                    "Accesso DidUP non completato nel flusso OAuth/browser. "
+                    f"{safe_error_summary(exc)}"
                 ) from exc
             if auth and auto:
                 raise RuntimeError(
