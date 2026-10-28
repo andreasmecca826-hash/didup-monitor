@@ -27,6 +27,9 @@ class ConsentMetadataParser(HTMLParser):
         self._button_depth = 0
         self._button_text: list[str] = []
         self.button_keywords: set[str] = set()
+        self._text_tag: str | None = None
+        self._title: list[str] = []
+        self._headings: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         values = dict(attrs)
@@ -47,10 +50,16 @@ class ConsentMetadataParser(HTMLParser):
         elif tag == "button":
             self._button_depth += 1
             self._button_text = []
+        elif tag == "title":
+            self._text_tag = "title"
+        elif tag in ("h1", "h2"):
+            self._text_tag = tag
 
     def handle_endtag(self, tag: str) -> None:
         if tag == "form":
             self._form = None
+        elif tag in ("title", "h1", "h2"):
+            self._text_tag = None
         elif tag == "button" and self._button_depth:
             text = " ".join("".join(self._button_text).casefold().split())
             for keyword in (
@@ -75,6 +84,34 @@ class ConsentMetadataParser(HTMLParser):
     def handle_data(self, data: str) -> None:
         if self._button_depth:
             self._button_text.append(data[:120])
+        if self._text_tag == "title":
+            self._title.append(data[:200])
+        elif self._text_tag in ("h1", "h2"):
+            self._headings.append(data[:200])
+
+    @staticmethod
+    def classify_page_text(value: str) -> str:
+        text = " ".join(value.casefold().split())
+        categories = (
+            ("access_denied", ("access denied", "accesso negato", "forbidden", "unauthorized")),
+            ("rate_limited", ("too many requests", "rate limit", "temporarily blocked")),
+            ("service_error", ("internal server error", "service unavailable", "errore interno")),
+            ("invalid_request", ("invalid request", "richiesta non valida", "invalid_client", "invalid_grant")),
+            ("login_rejected", ("login failed", "accesso non riuscito", "credenziali non valide")),
+            ("consent", ("consent", "consenso")),
+            ("login_page", ("login", "accedi", "accesso")),
+            ("generic_error", ("error", "errore")),
+        )
+        for category, markers in categories:
+            if any(marker in text for marker in markers):
+                return category
+        return "unclassified"
+
+    def page_categories(self) -> dict[str, object]:
+        return {
+            "title": self.classify_page_text(" ".join(self._title)),
+            "headings": sorted({self.classify_page_text(text) for text in self._headings}),
+        }
 
 
 def _safe_consent_metadata(response: httpx.Response) -> dict[str, object]:
@@ -95,6 +132,7 @@ def _safe_consent_metadata(response: httpx.Response) -> dict[str, object]:
         },
         "forms": parser.forms[:8],
         "button_keywords": sorted(parser.button_keywords),
+        "page_categories": parser.page_categories(),
     }
 
 
