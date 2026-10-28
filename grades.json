@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-28T11:07:47.910103+00:00",
+  "updatedAt": "2026-10-28T11:22:45.140464+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -903,6 +903,14 @@
       "teacher": "S. CALABRESE",
       "hour": "3",
       "activity": "Assemblea di classe"
+    },
+    {
+      "id": "pk_materia:4D632D7AC496A3BBF03B1E59A71F5704ADB848AA470E6532E81E7ED636D19D8BAA6155F96B06AC26ECEAEFBF3653515D60775BD6FD913F119EC3488AB3EC668B6512237020123546AFE075DFC71799F3",
+      "date": "2026-10-28",
+      "subject": "SCIENZE MOTORIE E SPORTIVE",
+      "teacher": "L. FIANDACA",
+      "hour": "4",
+      "activity": "Elezioni dei rappresentanti"
     }
   ],
   "notifications": [
