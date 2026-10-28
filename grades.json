@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-28T09:52:42.020785+00:00",
+  "updatedAt": "2026-10-28T10:07:50.372700+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -1577,6 +1577,18 @@
       "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/09/37afeae6-2e42-4232-9621-470cb6940893",
       "attachmentName": "timbro_orario ricreazione.pdf"
+    },
+    {
+      "id": "h:f86a368e0ebcc100",
+      "type": "reminder",
+      "title": "Promemoria",
+      "message": "Studiare fino a carboidrati",
+      "date": "2026-10-30",
+      "subject": null,
+      "read": false,
+      "attachmentPath": null,
+      "attachmentUrl": null,
+      "attachmentName": null
     },
     {
       "id": "h:8c4d8ffc047e1fdf",

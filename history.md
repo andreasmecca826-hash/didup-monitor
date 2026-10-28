@@ -50,3 +50,7 @@ Eventi registrati automaticamente dal monitor.
 
 - **Nuovo voto** — MATEMATICA: 6 — 📊 Media generale: 6.25 ⬇️ (-0.25)
 - **Media aggiornata** — 📊 Media generale: 6.25 ⬇️ (-0.25)
+
+## 2026-10-28 10:07 UTC
+
+- **Promemoria DidUP** — Studiare fino a carboidrati — Data: 2026-10-30
