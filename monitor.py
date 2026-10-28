@@ -1035,7 +1035,7 @@ def fetch_all_once(
         for name, section in SECTIONS.items():
             try:
                 items = list(getattr(didup, section.method)())
-                if name == "bacheca":
+                if name == "bacheca" and os.environ.get("VOTO_JSON_ONLY", "").lower() != "true":
                     out["_circular_files"] = download_circulars(didup, items)
                 if name == "compiti":
                     # Il registro contiene sia l'attivita' svolta sia i compiti.
@@ -1137,6 +1137,19 @@ def main() -> int:
         for name, items in data.items():
             fields = list(as_dict(items[0]).keys()) if items else []
             print(f"{name}: {fields}")
+        return 0
+
+    if os.environ.get("VOTO_JSON_ONLY", "").lower() == "true":
+        unavailable = [name for name in SECTIONS if data.get(name) is None]
+        if unavailable:
+            log.error(
+                "JSON non aggiornato: mancano sezioni DidUP (%s). Mantengo il file precedente.",
+                ", ".join(unavailable),
+            )
+            return 1
+        stats = compute_stats(data.get("voti") or [])
+        save_voto_data(data, stats)
+        log.info("Modalità richiesta da VOTO: aggiornato solo grades.json; notifiche e storico invariati.")
         return 0
 
     state = load_state()

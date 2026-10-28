@@ -65,7 +65,7 @@ jobs:
             [.workflow_runs[]
               | select((.id | tostring) != $run_id)
               | select(.event == "workflow_dispatch" and .head_branch == $branch)
-              | select(.status != "completed" or ((now - (.created_at | fromdate)) < 900))
+              | select(.status != "completed" or ((now - (.created_at | fromdate)) < 180))
             ] | length > 0
           ' <<< "$runs")"
           if [ "$should_skip" = "true" ]; then
@@ -82,7 +82,7 @@ jobs:
           python-version: "3.12"
 
       - name: Cache Chromium Playwright
-        if: ${{ !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata && !inputs.oauth_diagnostics && steps.app_trigger_guard.outputs.skip != 'true' }}
+        if: ${{ !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata && !inputs.oauth_diagnostics && !inputs.app_trigger && steps.app_trigger_guard.outputs.skip != 'true' }}
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
@@ -129,7 +129,7 @@ jobs:
         run: python scripts/repair_latest_circular_path.py
 
       - name: Inizializza file di stato se mancanti
-        if: ${{ !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata && !inputs.oauth_diagnostics && steps.app_trigger_guard.outputs.skip != 'true' }}
+        if: ${{ !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata && !inputs.oauth_diagnostics && !inputs.app_trigger && steps.app_trigger_guard.outputs.skip != 'true' }}
         run: |
           if [ ! -f state.json ]; then
             echo '{}' > state.json
@@ -154,8 +154,9 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           SUPABASE_STORAGE_BUCKET: circulars
-          BROWSER_AUTO_DOWNLOAD_NEW: ${{ !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata }}
-          BROWSER_FORCE_LATEST: ${{ inputs.open_latest_circular && !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata }}
+          BROWSER_AUTO_DOWNLOAD_NEW: ${{ !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata && !inputs.app_trigger }}
+          BROWSER_FORCE_LATEST: ${{ inputs.open_latest_circular && !inputs.supabase_readonly_check && !inputs.repair_latest_circular_metadata && !inputs.app_trigger }}
+          VOTO_JSON_ONLY: ${{ inputs.app_trigger }}
         run: python monitor.py
 
       - name: Salva JSON e storico nel repository
@@ -166,7 +167,11 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add state.json grades.json history.md
+          if [ "${{ inputs.app_trigger }}" = "true" ]; then
+            git add grades.json
+          else
+            git add state.json grades.json history.md
+          fi
 
           if ! git diff --cached --quiet; then
             git commit -m "Aggiorna dati voti e stato DidUP"
