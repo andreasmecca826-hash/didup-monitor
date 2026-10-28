@@ -142,12 +142,24 @@ def _test_browser_login() -> dict[str, object]:
     browser = None
     try:
         from playwright.sync_api import sync_playwright
-        from monitor import login_browser
 
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=True)
             page = browser.new_page()
-            login_browser(page)
+            page.goto(
+                "https://www.portaleargo.it/famiglia",
+                wait_until="domcontentloaded",
+                timeout=45_000,
+            )
+            page.wait_for_selector("#codiceScuola", timeout=30_000)
+            page.locator("#codiceScuola").fill(os.environ["DIDUP_SCHOOL"])
+            page.locator("#username").fill(os.environ["DIDUP_USER"])
+            page.locator("#password").fill(os.environ["DIDUP_PASSWORD"])
+            page.locator("#accediBtn").click()
+            page.wait_for_timeout(5_000)
+            password_field = page.locator("#password")
+            if password_field.count() and password_field.is_visible():
+                return {"ok": False, "reason": "web_login_not_completed"}
             return {"ok": True, "stage": "portal_web_login"}
     except Exception as exc:
         reason = "web_login_timeout" if "timeout" in type(exc).__name__.casefold() else "web_login_failed"
