@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-28T09:22:46.385720+00:00",
+  "updatedAt": "2026-10-28T09:37:38.091825+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -895,6 +895,14 @@
       "teacher": "V. RAPISARDA",
       "hour": "1",
       "activity": "somma e sottrazione di frazioni algebriche"
+    },
+    {
+      "id": "pk_materia:4D632D7AC496A3BBF03B1E59A71F5704ADB848AA470E6532E81E7ED636D19D8BAA6155F96B06AC26ECEAEFBF3653515D06623199A5EE03EBCA0850A9CE28AAE56512237020123546AFE075DFC71799F3",
+      "date": "2026-10-28",
+      "subject": "SCIEN.INT.(SC.TERRA-BIOLOGIA)",
+      "teacher": "S. CALABRESE",
+      "hour": "2",
+      "activity": "Assemblea di classe"
     }
   ],
   "notifications": [
