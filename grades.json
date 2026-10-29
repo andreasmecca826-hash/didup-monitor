@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-29T07:22:49.931466+00:00",
+  "updatedAt": "2026-10-29T07:37:49.129106+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -911,6 +911,14 @@
       "teacher": "L. FIANDACA",
       "hour": "4",
       "activity": "Elezioni dei rappresentanti"
+    },
+    {
+      "id": "pk_materia:4D632D7AC496A3BBF03B1E59A71F5704ADB848AA470E6532E81E7ED636D19D8BAA6155F96B06AC26ECEAEFBF3653515D5AF889C23E40F85F2AD9BFEEC73477FDF1134DBB840069D8F237E7EDE3099314",
+      "date": "2026-10-29",
+      "subject": "MATEMATICA",
+      "teacher": "V. RAPISARDA",
+      "hour": "6",
+      "activity": "verifica orale"
     }
   ],
   "notifications": [
