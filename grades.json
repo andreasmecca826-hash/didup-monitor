@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-29T08:07:48.930872+00:00",
+  "updatedAt": "2026-10-29T08:22:57.826774+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -30,7 +30,15 @@
       ]
     }
   ],
-  "assignments": [],
+  "assignments": [
+    {
+      "id": "h:e3b17f9376fe4207",
+      "title": "ANTOLOGIA: Studiare da pagina 5 a 12, da pagina 26 a pagina 28, da pagina 30a pagina 36, da oagina 37 a pagina 39",
+      "subject": "LINGUA E LETTERATURA ITALIANA",
+      "dueDate": "2026-11-04",
+      "completed": false
+    }
+  ],
   "diary": [
     {
       "id": "pk_materia:4D632D7AC496A3BBF03B1E59A71F5704ADB848AA470E6532E81E7ED636D19D8BAA6155F96B06AC26ECEAEFBF3653515D5AF889C23E40F85F2AD9BFEEC73477FDF1134DBB840069D8F237E7EDE3099314",
@@ -911,6 +919,22 @@
       "teacher": "L. FIANDACA",
       "hour": "4",
       "activity": "Elezioni dei rappresentanti"
+    },
+    {
+      "id": "pk_materia:4D632D7AC496A3BBF03B1E59A71F5704ADB848AA470E6532E81E7ED636D19D8BAA6155F96B06AC26ECEAEFBF3653515D02DF4D1A089B4A6C0FB5C149B816220E6512237020123546AFE075DFC71799F3",
+      "date": "2026-10-29",
+      "subject": "LINGUA E LETTERATURA ITALIANA",
+      "teacher": "A. FARACI",
+      "hour": "1",
+      "activity": "ANTOLOGIA: la rima, l'assonanza e la consonanza, la strofa. Esercitazione in classe"
+    },
+    {
+      "id": "pk_materia:4D632D7AC496A3BBF03B1E59A71F5704ADB848AA470E6532E81E7ED636D19D8BAA6155F96B06AC26ECEAEFBF3653515D02DF4D1A089B4A6C0FB5C149B816220E6512237020123546AFE075DFC71799F3",
+      "date": "2026-10-29",
+      "subject": "LINGUA E LETTERATURA ITALIANA",
+      "teacher": "A. FARACI",
+      "hour": "2",
+      "activity": "GRAMMATICA: la congiunzione e l'interiezione"
     },
     {
       "id": "pk_materia:4D632D7AC496A3BBF03B1E59A71F5704ADB848AA470E6532E81E7ED636D19D8BAA6155F96B06AC26ECEAEFBF3653515D5AF889C23E40F85F2AD9BFEEC73477FDF1134DBB840069D8F237E7EDE3099314",

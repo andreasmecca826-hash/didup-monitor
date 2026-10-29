@@ -54,3 +54,7 @@ Eventi registrati automaticamente dal monitor.
 ## 2026-10-28 10:07 UTC
 
 - **Promemoria DidUP** — Studiare fino a carboidrati — Data: 2026-10-30
+
+## 2026-10-29 08:22 UTC
+
+- **Nuovi compiti** — LINGUA E LETTERATURA ITALIANA — Data: 2026-11-04 — ANTOLOGIA: Studiare da pagina 5 a 12, da pagina 26 a pagina 28, da pagina 30a pagina 36, da oagina 37 a pagina 39
