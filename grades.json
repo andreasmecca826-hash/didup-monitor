@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-28T22:52:56.006133+00:00",
+  "updatedAt": "2026-10-29T05:07:55.109677+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -1549,42 +1549,6 @@
       "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/09/b704aa6d-4ef9-4b1f-8af7-ed4eec85d337",
       "attachmentName": "timbro_Circolare 43 Cambio aule.pdf"
-    },
-    {
-      "id": "h:3d931e9fced63686",
-      "type": "notice",
-      "title": "Comunicazione",
-      "message": "In riferimento alla circolare n. 41, si comunica che, per mero errore materiale, alla stessa era stato allegato un file non corretto. Si procede pertanto alla pubblicazione dell’allegato corretto, che sostituisce integralmente quello precedentemente pubblicato.",
-      "date": "2026-09-28 00:00:00",
-      "subject": "COMUNICAZIONI",
-      "read": false,
-      "attachmentPath": null,
-      "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/09/e654a85d-8882-4a76-adf0-e4826fefa910",
-      "attachmentName": "orario-provvisorio_diurno_2026-09-28_adattamento_timbro.pdf"
-    },
-    {
-      "id": "h:c1c4375b6258e627",
-      "type": "notice",
-      "title": "Comunicazione",
-      "message": "Circolare n.41 - Orario provvisorio delle lezioni da giorno 28 settembre 2026 - adattamento",
-      "date": "2026-09-28 00:00:00",
-      "subject": "CIRCOLARI",
-      "read": false,
-      "attachmentPath": null,
-      "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/09/be58be25-c034-48ea-8b29-d0ad18537657",
-      "attachmentName": "circ-041_orario-provvisorio_2026-09-28_adattamento_timbro.pdf"
-    },
-    {
-      "id": "h:2659073af517850c",
-      "type": "notice",
-      "title": "Comunicazione",
-      "message": "Orari della ricreazione – A decorrere dal 28 settembre c.a.",
-      "date": "2026-09-28 00:00:00",
-      "subject": "CIRCOLARI",
-      "read": false,
-      "attachmentPath": null,
-      "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/09/37afeae6-2e42-4232-9621-470cb6940893",
-      "attachmentName": "timbro_orario ricreazione.pdf"
     },
     {
       "id": "h:f86a368e0ebcc100",
