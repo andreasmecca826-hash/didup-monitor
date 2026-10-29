@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-29T11:07:49.147138+00:00",
+  "updatedAt": "2026-10-29T11:22:54.046525+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -1581,6 +1581,18 @@
       "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/09/b704aa6d-4ef9-4b1f-8af7-ed4eec85d337",
       "attachmentName": "timbro_Circolare 43 Cambio aule.pdf"
+    },
+    {
+      "id": "h:3b4a38f4b9f4903d",
+      "type": "reminder",
+      "title": "Promemoria",
+      "message": "English: written test.",
+      "date": "2026-11-09",
+      "subject": null,
+      "read": false,
+      "attachmentPath": null,
+      "attachmentUrl": null,
+      "attachmentName": null
     },
     {
       "id": "h:f86a368e0ebcc100",
