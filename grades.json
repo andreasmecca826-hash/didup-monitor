@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-29T12:52:58.255921+00:00",
+  "updatedAt": "2026-10-29T13:07:53.285039+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -32,10 +32,10 @@
   ],
   "assignments": [
     {
-      "id": "h:e3b17f9376fe4207",
+      "id": "h:6a9ffe2ee8a4a407",
       "title": "ANTOLOGIA: Studiare da pagina 5 a 12, da pagina 26 a pagina 28, da pagina 30a pagina 36, da oagina 37 a pagina 39",
       "subject": "LINGUA E LETTERATURA ITALIANA",
-      "dueDate": "2026-11-04",
+      "dueDate": "2026-11-05",
       "completed": false
     }
   ],
