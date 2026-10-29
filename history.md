@@ -66,3 +66,7 @@ Eventi registrati automaticamente dal monitor.
 ## 2026-10-29 13:07 UTC
 
 - **Nuovi compiti** — LINGUA E LETTERATURA ITALIANA — Data: 2026-11-05 — ANTOLOGIA: Studiare da pagina 5 a 12, da pagina 26 a pagina 28, da pagina 30a pagina 36, da oagina 37 a pagina 39
+
+## 2026-10-29 13:22 UTC
+
+- **Nuovi compiti** — LINGUA INGLESE — Data: 2026-11-05 — Be prepared for the oral tests. Ex —  pag. 194 n. 4 and 5.

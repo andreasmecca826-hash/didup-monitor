@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-29T13:07:53.285039+00:00",
+  "updatedAt": "2026-10-29T13:22:51.908172+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -35,6 +35,13 @@
       "id": "h:6a9ffe2ee8a4a407",
       "title": "ANTOLOGIA: Studiare da pagina 5 a 12, da pagina 26 a pagina 28, da pagina 30a pagina 36, da oagina 37 a pagina 39",
       "subject": "LINGUA E LETTERATURA ITALIANA",
+      "dueDate": "2026-11-05",
+      "completed": false
+    },
+    {
+      "id": "h:9f1148f734aeb605",
+      "title": "Be prepared for the oral tests. Ex\n pag. 194 n. 4 and 5.",
+      "subject": "LINGUA INGLESE",
       "dueDate": "2026-11-05",
       "completed": false
     }
@@ -935,6 +942,14 @@
       "teacher": "A. FARACI",
       "hour": "2",
       "activity": "GRAMMATICA: la congiunzione e l'interiezione"
+    },
+    {
+      "id": "pk_materia:4D632D7AC496A3BBF03B1E59A71F5704ADB848AA470E6532E81E7ED636D19D8BAA6155F96B06AC26ECEAEFBF3653515D56DAB8FD8883F9A566C9C3B22EBF991A6512237020123546AFE075DFC71799F3",
+      "date": "2026-10-29",
+      "subject": "LINGUA INGLESE",
+      "teacher": "M. FASONE",
+      "hour": "5",
+      "activity": "Present simple vs present continuous: revision."
     },
     {
       "id": "pk_materia:4D632D7AC496A3BBF03B1E59A71F5704ADB848AA470E6532E81E7ED636D19D8BAA6155F96B06AC26ECEAEFBF3653515D5AF889C23E40F85F2AD9BFEEC73477FDF1134DBB840069D8F237E7EDE3099314",
