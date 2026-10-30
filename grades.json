@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-30T10:37:48.755357+00:00",
+  "updatedAt": "2026-10-30T10:52:55.624517+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -26,6 +26,20 @@
           "type": "orale",
           "weight": 1,
           "comment": "sei"
+        }
+      ]
+    },
+    {
+      "id": "scienze-integrate-fisica",
+      "name": "SCIENZE INTEGRATE FISICA",
+      "grades": [
+        {
+          "id": "1",
+          "value": "7+",
+          "date": "2026-10-23",
+          "type": "altro",
+          "weight": 1,
+          "comment": "ESPERIMENTO DI LABORATORIO SUL MOTO RETTILINEO UNIFORME."
         }
       ]
     }

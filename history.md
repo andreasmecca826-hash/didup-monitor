@@ -78,3 +78,8 @@ Eventi registrati automaticamente dal monitor.
 ## 2026-10-30 08:52 UTC
 
 - **Nuovi compiti** — STORIA — Data: 2026-11-04 — Studiare da 24 a pagina 32
+
+## 2026-10-30 10:52 UTC
+
+- **Nuovo voto** — SCIENZE INTEGRATE FISICA: 7+ — 📊 Media generale: 6.50 ⬆️ (+0.25)
+- **Media aggiornata** — 📊 Media generale: 6.50 ⬆️ (+0.25)
