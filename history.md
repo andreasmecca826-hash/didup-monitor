@@ -70,3 +70,7 @@ Eventi registrati automaticamente dal monitor.
 ## 2026-10-29 13:22 UTC
 
 - **Nuovi compiti** — LINGUA INGLESE — Data: 2026-11-05 — Be prepared for the oral tests. Ex —  pag. 194 n. 4 and 5.
+
+## 2026-10-30 08:07 UTC
+
+- **Nuovi compiti** — LINGUA E LETTERATURA ITALIANA — Data: 2026-11-05 — ANTOLOGIA: studiare da poagina 36 a pagina 37

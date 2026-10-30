@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-30T07:52:59.005745+00:00",
+  "updatedAt": "2026-10-30T08:07:49.715304+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -42,6 +42,13 @@
       "id": "h:9f1148f734aeb605",
       "title": "Be prepared for the oral tests. Ex\n pag. 194 n. 4 and 5.",
       "subject": "LINGUA INGLESE",
+      "dueDate": "2026-11-05",
+      "completed": false
+    },
+    {
+      "id": "h:411a90663c4c3b36",
+      "title": "ANTOLOGIA: studiare da poagina 36 a pagina 37",
+      "subject": "LINGUA E LETTERATURA ITALIANA",
       "dueDate": "2026-11-05",
       "completed": false
     }
@@ -958,6 +965,14 @@
       "teacher": "V. RAPISARDA",
       "hour": "6",
       "activity": "verifica orale"
+    },
+    {
+      "id": "pk_materia:4D632D7AC496A3BBF03B1E59A71F5704ADB848AA470E6532E81E7ED636D19D8BAA6155F96B06AC26ECEAEFBF3653515D02DF4D1A089B4A6C0FB5C149B816220E6512237020123546AFE075DFC71799F3",
+      "date": "2026-10-30",
+      "subject": "LINGUA E LETTERATURA ITALIANA",
+      "teacher": "A. FARACI",
+      "hour": "1",
+      "activity": "ANTOLOGIA: il sonetto, caratteristiche. L' Enjambement"
     }
   ],
   "notifications": [
