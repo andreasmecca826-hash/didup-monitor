@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-30T17:52:58.126286+00:00",
+  "updatedAt": "2026-10-30T18:08:04.449255+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -1021,6 +1021,18 @@
     }
   ],
   "notifications": [
+    {
+      "id": "h:57bbcab6fb815bea",
+      "type": "notice",
+      "title": "Comunicazione",
+      "message": "Circolare n.103 - Orario provvisorio delle lezioni da giorno 2 novembre 2026",
+      "date": "2026-10-30 00:00:00",
+      "subject": "CIRCOLARI",
+      "read": false,
+      "attachmentPath": "circulars/dd00612af1813c3357ec9aa23b875f8c47408649d2ff08fb8cc35cc0fd72e298.pdf",
+      "attachmentUrl": null,
+      "attachmentName": "circ-103_orario-provvisorio_2026-11-02_timbro.pdf"
+    },
     {
       "id": "h:9150162825298e6a",
       "type": "notice",

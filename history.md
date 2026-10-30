@@ -83,3 +83,7 @@ Eventi registrati automaticamente dal monitor.
 
 - **Nuovo voto** — SCIENZE INTEGRATE FISICA: 7+ — 📊 Media generale: 6.50 ⬆️ (+0.25)
 - **Media aggiornata** — 📊 Media generale: 6.50 ⬆️ (+0.25)
+
+## 2026-10-30 18:08 UTC
+
+- **Bacheca DidUP** — Nuova comunicazione — Data: 2026-10-30 — Circolare n.103 - Orario provvisorio delle lezioni da giorno 2 novembre 2026
