@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-30T18:08:04.449255+00:00",
+  "updatedAt": "2026-10-30T18:22:58.887198+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -1030,7 +1030,7 @@
       "subject": "CIRCOLARI",
       "read": false,
       "attachmentPath": "circulars/dd00612af1813c3357ec9aa23b875f8c47408649d2ff08fb8cc35cc0fd72e298.pdf",
-      "attachmentUrl": null,
+      "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/7dca23c8-d491-480f-a75f-b0d58b933456",
       "attachmentName": "circ-103_orario-provvisorio_2026-11-02_timbro.pdf"
     },
     {
