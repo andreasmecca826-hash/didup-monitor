@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-29T22:52:57.895188+00:00",
+  "updatedAt": "2026-10-30T05:07:49.578765+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -1584,18 +1584,6 @@
       "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/09/2dc405e9-b7a5-400c-88ec-4f5ef6784285",
       "attachmentName": "timbro_circolare.pdf"
-    },
-    {
-      "id": "h:bbcc0435c9560e4f",
-      "type": "notice",
-      "title": "Comunicazione",
-      "message": "Cambio aula 1AFM-5E",
-      "date": "2026-09-29 00:00:00",
-      "subject": "CIRCOLARI",
-      "read": false,
-      "attachmentPath": null,
-      "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/09/b704aa6d-4ef9-4b1f-8af7-ed4eec85d337",
-      "attachmentName": "timbro_Circolare 43 Cambio aule.pdf"
     },
     {
       "id": "h:3b4a38f4b9f4903d",
