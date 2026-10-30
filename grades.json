@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-30T08:37:49.416947+00:00",
+  "updatedAt": "2026-10-30T08:52:51.799001+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -50,6 +50,13 @@
       "title": "ANTOLOGIA: studiare da poagina 36 a pagina 37",
       "subject": "LINGUA E LETTERATURA ITALIANA",
       "dueDate": "2026-11-05",
+      "completed": false
+    },
+    {
+      "id": "h:2926c38828d1111a",
+      "title": "Studiare da 24 a pagina 32",
+      "subject": "STORIA",
+      "dueDate": "2026-11-04",
       "completed": false
     }
   ],
@@ -973,6 +980,14 @@
       "teacher": "A. FARACI",
       "hour": "1",
       "activity": "ANTOLOGIA: il sonetto, caratteristiche. L' Enjambement"
+    },
+    {
+      "id": "pk_materia:4D632D7AC496A3BBF03B1E59A71F5704ADB848AA470E6532E81E7ED636D19D8BAA6155F96B06AC26ECEAEFBF3653515D74C87A8E84E93F702FAD1B671D98B72A6512237020123546AFE075DFC71799F3",
+      "date": "2026-10-30",
+      "subject": "STORIA",
+      "teacher": "A. FARACI",
+      "hour": "2",
+      "activity": "L'impero di Augusto"
     }
   ],
   "notifications": [

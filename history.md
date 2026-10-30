@@ -74,3 +74,7 @@ Eventi registrati automaticamente dal monitor.
 ## 2026-10-30 08:07 UTC
 
 - **Nuovi compiti** — LINGUA E LETTERATURA ITALIANA — Data: 2026-11-05 — ANTOLOGIA: studiare da poagina 36 a pagina 37
+
+## 2026-10-30 08:52 UTC
+
+- **Nuovi compiti** — STORIA — Data: 2026-11-04 — Studiare da 24 a pagina 32
