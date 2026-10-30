@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-30T22:52:54.297136+00:00",
+  "updatedAt": "2026-10-30T23:02:33.326598+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -1030,8 +1030,18 @@
       "subject": "CIRCOLARI",
       "read": false,
       "attachmentPath": "circulars/dd00612af1813c3357ec9aa23b875f8c47408649d2ff08fb8cc35cc0fd72e298.pdf",
-      "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/7dca23c8-d491-480f-a75f-b0d58b933456",
-      "attachmentName": "circ-103_orario-provvisorio_2026-11-02_timbro.pdf"
+      "attachmentUrl": null,
+      "attachmentName": "circ-103_orario-provvisorio_2026-11-02_timbro.pdf",
+      "attachments": [
+        {
+          "path": "circulars/dd00612af1813c3357ec9aa23b875f8c47408649d2ff08fb8cc35cc0fd72e298.pdf",
+          "name": "circ-103_orario-provvisorio_2026-11-02_timbro.pdf"
+        },
+        {
+          "path": "circulars/a9c3be8972ece9a4fc490e7ef1a90c451e41c32a63cb3391dc5da85412d4876b.pdf",
+          "name": "orario-provvisorio_diurno_2026-11-02_timbro.pdf"
+        }
+      ]
     },
     {
       "id": "h:9150162825298e6a",
@@ -1042,8 +1052,14 @@
       "subject": "CIRCOLARI",
       "read": false,
       "attachmentPath": "circulars/bec8fee68e0d6684a7bcd3a9c34f9f5203b430d16c51d9ea068f1454f98fe3fc.pdf",
-      "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/06ec9af7-c591-47c6-bd54-bd17a39787ff",
-      "attachmentName": "_timbro_elezioni serale Alberghiero.pdf"
+      "attachmentUrl": null,
+      "attachmentName": "_timbro_elezioni serale Alberghiero.pdf",
+      "attachments": [
+        {
+          "path": "circulars/bec8fee68e0d6684a7bcd3a9c34f9f5203b430d16c51d9ea068f1454f98fe3fc.pdf",
+          "name": "_timbro_elezioni serale Alberghiero.pdf"
+        }
+      ]
     },
     {
       "id": "h:a1c03d3b507db787",
@@ -1066,8 +1082,14 @@
       "subject": "COMUNICAZIONI",
       "read": false,
       "attachmentPath": "circulars/a00b4d911b36325d49a475ea9b70a42d1f7bd21cbc7f4054e662bfdf3098f2be.pdf",
-      "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/e7fe03f5-b4b8-402b-bd17-f919bf5b5f97",
-      "attachmentName": "comunicazione elezioni.pdf"
+      "attachmentUrl": null,
+      "attachmentName": "comunicazione elezioni.pdf",
+      "attachments": [
+        {
+          "path": "circulars/a00b4d911b36325d49a475ea9b70a42d1f7bd21cbc7f4054e662bfdf3098f2be.pdf",
+          "name": "comunicazione elezioni.pdf"
+        }
+      ]
     },
     {
       "id": "h:bf5c2147601d9366",
