@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-30T12:07:48.301633+00:00",
+  "updatedAt": "2026-10-30T12:23:01.852255+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -1002,6 +1002,22 @@
       "teacher": "A. FARACI",
       "hour": "2",
       "activity": "L'impero di Augusto"
+    },
+    {
+      "id": "pk_materia:4D632D7AC496A3BBF03B1E59A71F5704ADB848AA470E6532E81E7ED636D19D8BAA6155F96B06AC26ECEAEFBF3653515D8775F9DB79CD72BF8BD6A77CC5BE398C6512237020123546AFE075DFC71799F3",
+      "date": "2026-10-30",
+      "subject": "SCIENZE INTEGRATE FISICA",
+      "teacher": "S. MAROTTA",
+      "hour": "5",
+      "activity": "ESERCITAZIONE SUL MOTO RETTILINEO UNIFORME."
+    },
+    {
+      "id": "pk_materia:4D632D7AC496A3BBF03B1E59A71F5704ADB848AA470E6532E81E7ED636D19D8BAA6155F96B06AC26ECEAEFBF3653515D06623199A5EE03EBCA0850A9CE28AAE56512237020123546AFE075DFC71799F3",
+      "date": "2026-10-30",
+      "subject": "SCIEN.INT.(SC.TERRA-BIOLOGIA)",
+      "teacher": "S. CALABRESE",
+      "hour": "6",
+      "activity": "verifiche orali"
     }
   ],
   "notifications": [
