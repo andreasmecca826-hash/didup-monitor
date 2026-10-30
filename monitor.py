@@ -356,21 +356,45 @@ def circular_browser_token(item: Any) -> str:
     return hashlib.sha256(identity.encode("utf-8")).hexdigest()
 
 
-def download_circulars(didup: Any, items: list[Any]) -> dict[str, dict[str, str]]:
+def normalize_circular_files(value: Any) -> list[dict[str, str]]:
+    """Converte record legacy singoli o nuovi elenchi nel formato interno canonico."""
+    candidates = value if isinstance(value, list) else [value]
+    normalized: list[dict[str, str]] = []
+    for candidate in candidates:
+        if not isinstance(candidate, dict):
+            continue
+        path = candidate.get("path")
+        if not isinstance(path, str) or not re.fullmatch(r"circulars/[a-f0-9]{64}\.pdf", path):
+            continue
+        name = candidate.get("name")
+        normalized.append({"path": path, "name": name if isinstance(name, str) and name else "circolare.pdf"})
+    return normalized
+
+
+def merge_circular_files(*groups: Any) -> list[dict[str, str]]:
+    """Unisce gli allegati senza duplicare la stessa coppia percorso e nome."""
+    merged: dict[tuple[str, str], dict[str, str]] = {}
+    for group in groups:
+        for entry in normalize_circular_files(group):
+            merged.setdefault((entry["path"], entry["name"]), entry)
+    return list(merged.values())
+
+
+def download_circulars(didup: Any, items: list[Any]) -> dict[str, list[dict[str, str]]]:
     """Acquisisce una volta gli allegati delle nuove circolari, senza presa visione."""
-    downloaded: dict[str, dict[str, str]] = {}
+    downloaded: dict[str, list[dict[str, str]]] = {}
     automatic = os.environ.get("BROWSER_AUTO_DOWNLOAD_NEW", "").lower() == "true"
     force_latest = os.environ.get("BROWSER_FORCE_LATEST", "").lower() == "true"
     if not automatic and not force_latest:
         return downloaded
 
-    candidates: list[tuple[Any, Any, str]] = []
+    candidates: list[tuple[Any, list[Any], str]] = []
     for item in items:
         if not circular_is_recent(first_attr(item, ("dat_giorno", "dat_evento", "data"))):
             continue
         allegati = getattr(item, "lista_allegati", None) or []
         if allegati:
-            candidates.append((item, allegati[0], circular_browser_token(item)))
+            candidates.append((item, list(allegati), circular_browser_token(item)))
     candidates.sort(
         key=lambda pair: parse_date(first_attr(pair[0], ("dat_giorno", "dat_evento", "data"))) or date.min,
     )
@@ -405,25 +429,42 @@ def download_circulars(didup: Any, items: list[Any]) -> dict[str, dict[str, str]
             except Exception as exc:
                 log.error("Login browser DidUP fallito (%s)", type(exc).__name__)
                 return downloaded
-            for item, allegato, token in candidates:
-                try:
-                    open_bacheca(page)
-                    pdf_bytes = click_bacheca_attachment(page, item, allegato)
-                    path = upload_circular_pdf(pdf_bytes)
+            for item, allegati, token in candidates:
+                entries: list[dict[str, str]] = []
+                successful = 0
+                for attachment_index, allegato in enumerate(allegati):
+                    try:
+                        if attachment_index:
+                            try:
+                                page.keyboard.press("Escape")
+                            except Exception:
+                                pass
+                        open_bacheca(page)
+                        pdf_bytes = click_bacheca_attachment(page, item, allegato)
+                        path = upload_circular_pdf(pdf_bytes)
+                        name = first_attr(allegato, ("nome_file", "descrizione_file"), "circolare.pdf")
+                        if not any(
+                            entry["path"] == path and entry["name"] == name for entry in entries
+                        ):
+                            entries.append({"path": path, "name": name})
+                        successful += 1
+                        log.info("Allegato PDF acquisito nello storage interno")
+                    except Exception as exc:
+                        status = getattr(exc, "status", None)
+                        if status is not None:
+                            log.error("Download UI allegato fallito (HTTP %s)", status)
+                        else:
+                            log.error("Download UI allegato fallito (%s)", type(exc).__name__)
+
+                if entries:
                     key = item_key(item, ("prg_messaggio", "prg_bacheca", "prg", "id"))
-                    entry = {"path": path, "name": first_attr(allegato, ("nome_file", "descrizione_file"), "circolare.pdf")}
-                    downloaded[key] = entry
-                    downloaded[f"object:{id(item)}"] = entry
+                    downloaded[key] = entries
+                    downloaded[f"object:{id(item)}"] = entries
+                if successful == len(allegati):
                     seen.add(token)
                     state[state_key] = sorted(seen)
                     save_state(state)
-                    log.info("Nuova circolare acquisita nello storage interno")
-                except Exception as exc:
-                    status = getattr(exc, "status", None)
-                    if status is not None:
-                        log.error("Download UI Bacheca fallito (HTTP %s)", status)
-                    else:
-                        log.error("Download UI Bacheca fallito (%s)", type(exc).__name__)
+                    log.info("Circolare acquisita: %d PDF", len(entries))
         finally:
             context.close()
             browser.close()
@@ -517,7 +558,7 @@ def compito_recente(data: str) -> bool:
 def build_voto_data(
     data: dict[str, list[Any] | None],
     stats: dict[str, Any],
-    circular_files: dict[str, dict[str, str]] | None = None,
+    circular_files: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Converte i record DidUP completi nel formato letto dall'app VOTO."""
     grouped: dict[str, dict[str, Any]] = {}
@@ -625,12 +666,14 @@ def build_voto_data(
             )
             item_id = item_key(item, id_fields) or f"{kind}-{index}"
             files = circular_files or {}
-            local_file = files.get(f"object:{id(item)}") or files.get(item_id)
-            attachment_path = local_file["path"] if local_file else None
-            if local_file:
+            local_files = normalize_circular_files(
+                files.get(f"object:{id(item)}") or files.get(item_id)
+            )
+            attachment_path = local_files[0]["path"] if local_files else None
+            if local_files:
                 attachment_url = None
-                attachment_name = local_file["name"]
-            notifications.append({
+                attachment_name = local_files[0]["name"]
+            notification = {
                 "id": item_id,
                 "type": "note" if kind == "note" else "reminder" if kind == "reminder" else "notice",
                 "title": title,
@@ -641,7 +684,10 @@ def build_voto_data(
                 "attachmentPath": attachment_path,
                 "attachmentUrl": attachment_url or None,
                 "attachmentName": attachment_name or None,
-            })
+            }
+            if local_files:
+                notification["attachments"] = local_files
+            notifications.append(notification)
 
     return {
         "updatedAt": datetime.now(timezone.utc).isoformat(),
@@ -660,8 +706,10 @@ def build_voto_data(
     }
 
 
-def existing_circular_paths(output: Path) -> tuple[dict[str, str], dict[str, str]]:
-    """Restituisce i path interni già pubblicati, indicizzati per ID e URL sorgente."""
+def existing_circular_paths(
+    output: Path,
+) -> tuple[dict[str, list[dict[str, str]]], dict[str, list[dict[str, str]]]]:
+    """Restituisce gli allegati interni già pubblicati, indicizzati per ID e URL sorgente."""
     if not output.exists():
         return {}, {}
     try:
@@ -672,26 +720,32 @@ def existing_circular_paths(output: Path) -> tuple[dict[str, str], dict[str, str
     if not isinstance(notifications, list):
         return {}, {}
 
-    by_id: dict[str, str] = {}
-    by_url: dict[str, str] = {}
+    by_id: dict[str, list[dict[str, str]]] = {}
+    by_url: dict[str, list[dict[str, str]]] = {}
     for item in notifications:
         if not isinstance(item, dict):
             continue
-        path = item.get("attachmentPath")
-        if not isinstance(path, str) or not re.fullmatch(r"circulars/[a-f0-9]{64}\.pdf", path):
+        attachments = normalize_circular_files(item.get("attachments"))
+        if not attachments:
+            attachments = normalize_circular_files({
+                "path": item.get("attachmentPath"),
+                "name": item.get("attachmentName"),
+            })
+        if not attachments:
             continue
         if item.get("id") is not None:
-            by_id[str(item["id"])] = path
+            key = str(item["id"])
+            by_id[key] = merge_circular_files(by_id.get(key), attachments)
         url = item.get("attachmentUrl")
         if isinstance(url, str) and url:
-            by_url[url] = path
+            by_url[url] = merge_circular_files(by_url.get(url), attachments)
     return by_id, by_url
 
 
 def save_voto_data(
     data: dict[str, list[Any] | None],
     stats: dict[str, Any],
-    circular_files: dict[str, dict[str, str]] | None = None,
+    circular_files: dict[str, Any] | None = None,
 ) -> None:
     output = Path(os.environ.get("VOTO_FILE") or "grades.json")
     payload = build_voto_data(data, stats, circular_files)
@@ -714,20 +768,41 @@ def save_voto_data(
             )
     preserved = 0
     for item in payload["notifications"]:
-        if not isinstance(item, dict) or item.get("attachmentPath"):
+        if not isinstance(item, dict):
             continue
-        path = previous_by_id.get(str(item.get("id"))) if item.get("id") is not None else None
+        previous = previous_by_id.get(str(item.get("id")), []) if item.get("id") is not None else []
         url = item.get("attachmentUrl")
-        if not path and isinstance(url, str):
-            path = previous_by_url.get(url)
-        if path:
-            item["attachmentPath"] = path
-            preserved += 1
+        if not previous and isinstance(url, str):
+            previous = previous_by_url.get(url, [])
+        current = merge_circular_files(
+            item.get("attachments"),
+            {
+                "path": item.get("attachmentPath"),
+                "name": item.get("attachmentName"),
+            },
+        )
+        current_paths = {entry["path"] for entry in current}
+        attachments = merge_circular_files(current, previous)
+        if attachments:
+            item["attachments"] = attachments
+            item["attachmentPath"] = attachments[0]["path"]
+            item["attachmentName"] = attachments[0]["name"]
+            item["attachmentUrl"] = None
+            preserved += sum(entry["path"] not in current_paths for entry in previous)
     output.write_text(
         json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
-    linked_pdfs = sum(bool(item.get("attachmentPath")) for item in payload["notifications"])
+    linked_pdfs = sum(
+        len(
+            merge_circular_files(
+                item.get("attachments"),
+                {"path": item.get("attachmentPath"), "name": item.get("attachmentName")},
+            )
+        )
+        for item in payload["notifications"]
+        if isinstance(item, dict)
+    )
     log.info("PDF interni associati ai metadati: %d", linked_pdfs)
     log.info("Path PDF precedenti conservati: %d", preserved)
 
