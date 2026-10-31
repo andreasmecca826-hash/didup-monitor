@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-31T10:37:54.248687+00:00",
+  "updatedAt": "2026-10-31T10:52:53.549997+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -1702,6 +1702,104 @@
       "attachmentPath": null,
       "attachmentUrl": null,
       "attachmentName": null
+    }
+  ],
+  "attendanceEvents": [
+    {
+      "id": "appello-A-2026-10-26-0",
+      "type": "absence",
+      "date": "2026-10-26",
+      "justificationStatus": "Da giustificare"
+    },
+    {
+      "id": "appello-A-2026-10-23-1",
+      "type": "absence",
+      "date": "2026-10-23",
+      "justificationStatus": "Da giustificare"
+    },
+    {
+      "id": "appello-A-2026-10-22-2",
+      "type": "absence",
+      "date": "2026-10-22",
+      "justificationStatus": "Da giustificare"
+    },
+    {
+      "id": "appello-A-2026-10-21-3",
+      "type": "absence",
+      "date": "2026-10-21",
+      "justificationStatus": "Da giustificare"
+    },
+    {
+      "id": "appello-A-2026-10-20-4",
+      "type": "absence",
+      "date": "2026-10-20",
+      "justificationStatus": "Da giustificare"
+    },
+    {
+      "id": "appello-A-2026-10-16-5",
+      "type": "absence",
+      "date": "2026-10-16",
+      "justificationStatus": "Da giustificare"
+    },
+    {
+      "id": "appello-A-2026-10-13-6",
+      "type": "absence",
+      "date": "2026-10-13",
+      "justificationStatus": "Da giustificare"
+    },
+    {
+      "id": "appello-A-2026-10-12-7",
+      "type": "absence",
+      "date": "2026-10-12",
+      "justificationStatus": "Da giustificare"
+    },
+    {
+      "id": "appello-A-2026-10-09-8",
+      "type": "absence",
+      "date": "2026-10-09",
+      "justificationStatus": "Da giustificare"
+    },
+    {
+      "id": "appello-A-2026-10-08-9",
+      "type": "absence",
+      "date": "2026-10-08",
+      "justificationStatus": "Da giustificare"
+    },
+    {
+      "id": "appello-A-2026-10-07-10",
+      "type": "absence",
+      "date": "2026-10-07",
+      "justificationStatus": "Da giustificare"
+    },
+    {
+      "id": "appello-A-2026-10-06-11",
+      "type": "absence",
+      "date": "2026-10-06",
+      "justificationStatus": "Da giustificare"
+    },
+    {
+      "id": "appello-I-2026-09-30-12",
+      "type": "delay",
+      "date": "2026-09-30",
+      "justificationStatus": null
+    },
+    {
+      "id": "appello-A-2026-09-24-13",
+      "type": "absence",
+      "date": "2026-09-24",
+      "justificationStatus": "Da giustificare"
+    },
+    {
+      "id": "appello-A-2026-09-18-14",
+      "type": "absence",
+      "date": "2026-09-18",
+      "justificationStatus": "Da giustificare"
+    },
+    {
+      "id": "appello-A-2026-09-17-15",
+      "type": "absence",
+      "date": "2026-09-17",
+      "justificationStatus": "Da giustificare"
     }
   ],
   "attendance": {
