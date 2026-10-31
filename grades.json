@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-30T23:02:33.326598+00:00",
+  "updatedAt": "2026-10-31T05:07:52.905167+00:00",
   "subjects": [
     {
       "id": "lingua-inglese",
@@ -1666,18 +1666,6 @@
       "attachmentPath": null,
       "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/10/c6525c06-9ad4-4f91-b81a-0cc148218a33",
       "attachmentName": "_timbro_circolare uscita didattica orientamento catania 47.pdf"
-    },
-    {
-      "id": "h:cc24be718da20d4a",
-      "type": "notice",
-      "title": "Comunicazione",
-      "message": "Invito partecipazione classi circuito a eventi di carattere trattamentale – Ottobre 2026\nSi",
-      "date": "2026-09-30 00:00:00",
-      "subject": "CIRCOLARI",
-      "read": false,
-      "attachmentPath": null,
-      "attachmentUrl": "https://s3.eu-south-1.amazonaws.com/produzione-eu-south-1-files-repo/SG29757/WSX/BACHECA/2026/09/2dc405e9-b7a5-400c-88ec-4f5ef6784285",
-      "attachmentName": "timbro_circolare.pdf"
     },
     {
       "id": "h:3b4a38f4b9f4903d",
