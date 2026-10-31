@@ -613,6 +613,42 @@ def build_voto_data(
     assenze = sum(first_attr(evento, ("cod_evento",)).upper() == "A" for evento in eventi)
     ritardi = sum(first_attr(evento, ("cod_evento",)).upper() == "I" for evento in eventi)
     uscite = sum(first_attr(evento, ("cod_evento",)).upper() == "U" for evento in eventi)
+    attendance_events = []
+    event_types = {"A": "absence", "I": "delay", "U": "earlyExit"}
+    for index, evento in enumerate(eventi):
+        code = first_attr(evento, ("cod_evento",)).upper()
+        event_type = event_types.get(code)
+        raw_date = first_attr(evento, ("dat_evento", "data"))
+        event_date = parse_date(raw_date) if raw_date else None
+        if event_type is None or event_date is None:
+            continue
+
+        pending_raw = getattr(evento, "da_giustificare", None)
+        if isinstance(evento, dict):
+            pending_raw = evento.get("da_giustificare", pending_raw)
+        pending = (
+            pending_raw is True
+            or str(pending_raw or "").strip().upper() in {"S", "SI", "TRUE", "1"}
+        )
+        justified = first_attr(evento, ("giustificata",)).strip().upper() == "S"
+        justification_status = None
+        if event_type == "absence":
+            if pending:
+                justification_status = "Da giustificare"
+            elif justified:
+                justification_status = "Giustificata"
+        event_id = first_attr(evento, ("prg_evento", "id")) or (
+            f"appello-{code}-{event_date.isoformat()}-{index}"
+        )
+        attendance_events.append(
+            {
+                "id": event_id,
+                "type": event_type,
+                "date": event_date.isoformat(),
+                "justificationStatus": justification_status,
+            }
+        )
+
     notifications = []
     notification_sections = (
         ("note", "note", "Nota disciplinare"),
@@ -695,6 +731,7 @@ def build_voto_data(
         "assignments": assignments,
         "diary": diary,
         "notifications": notifications,
+        "attendanceEvents": attendance_events,
         "attendance": {
             "absenceDays": assenze,
             "absenceHours": assenze * 6,
